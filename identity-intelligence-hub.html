@@ -654,7 +654,35 @@ input, select, textarea { font-family: inherit; }
         </div>
 
         <div class="card">
+          <h3>CORS Proxy (opzionale ma consigliato)</h3>
+          <p class="muted" style="margin-bottom: 12px;">
+            La maggior parte dei provider OSINT (LeakIX, BreachDirectory, IntelX, DeHashed) <strong>non consente chiamate dirette dal browser</strong> per via delle policy CORS. Configura un proxy per inoltrare le richieste. Esempi pubblici: <code>https://corsproxy.io/?</code>, <code>https://api.allorigins.win/raw?url=</code>. Per uso reale, deploya un proxy tuo (Cloudflare Worker, Nginx, etc.).
+          </p>
+          <div class="warning-box" style="background: color-mix(in srgb, var(--danger) 12%, transparent); border-color: color-mix(in srgb, var(--danger) 35%, transparent);">
+            <i data-lucide="shield-alert" class="icon" style="color: var(--danger);"></i>
+            <div><strong>Privacy:</strong> usando un proxy pubblico le tue API Key e le query passano da un server di terze parti. Per dati sensibili usa solo proxy tuoi.</div>
+          </div>
+          <div class="input-group">
+            <input id="corsProxyInput" class="input" placeholder="https://corsproxy.io/?" value="" />
+            <button class="btn btn-ghost" id="clearProxy"><i data-lucide="x"></i></button>
+          </div>
+        </div>
+
+        <div class="card">
           <h3>Chiavi servizi OSINT</h3>
+          <div class="field">
+            <label>IntelX Tier</label>
+            <div class="row-flex" style="gap: 16px;">
+              <label class="check" style="cursor:pointer;">
+                <input type="radio" name="intelxTier" value="free" checked />
+                <span>Free (<code>free.intelx.io</code>)</span>
+              </label>
+              <label class="check" style="cursor:pointer;">
+                <input type="radio" name="intelxTier" value="paid" />
+                <span>Paid (<code>2.intelx.io</code>)</span>
+              </label>
+            </div>
+          </div>
           <div id="apiKeysForm"></div>
         </div>
 
@@ -720,6 +748,8 @@ const state = {
     anthropic: '',
     master: ''
   },
+  intelxTier: 'free',           // 'free' -> free.intelx.io, 'paid' -> 2.intelx.io
+  corsProxy: '',                 // opzionale, es. 'https://corsproxy.io/?'
   aiConsent: false,
   recent: [],
   lastResults: null,
@@ -731,6 +761,26 @@ const state = {
     dehashed: 0
   }
 };
+
+// Wrapper che applica il CORS proxy se configurato
+function proxied(url) {
+  if (!state.corsProxy) return url;
+  const p = state.corsProxy.endsWith('?') || state.corsProxy.endsWith('=')
+    ? state.corsProxy
+    : state.corsProxy.replace(/\/?$/, '/');
+  return p + encodeURIComponent(url);
+}
+
+// Estrae messaggio d'errore HTTP utile dal Response
+async function httpErr(res) {
+  let detail = '';
+  try { detail = (await res.text()).slice(0, 200); } catch {}
+  if (res.status === 401) return `HTTP 401 — API Key non valida o scaduta${detail ? ' · ' + detail : ''}`;
+  if (res.status === 403) return `HTTP 403 — Accesso negato (subscription o IP ban)${detail ? ' · ' + detail : ''}`;
+  if (res.status === 404) return `HTTP 404 — Endpoint o risorsa non trovata`;
+  if (res.status === 429) return `HTTP 429 — Rate limit raggiunto`;
+  return `HTTP ${res.status}${detail ? ' · ' + detail : ''}`;
+}
 
 const SERVICES = {
   intelx: { name: 'IntelX', color: '#4f98a3', limit: 50, plan: 'Free', limitUnit: '/giorno', pricing: 'https://intelx.io/product' },
@@ -815,20 +865,21 @@ async function callIntelX(kw, type) {
   const key = state.apiKeys.intelx;
   if (!key) return { service: 'intelx', status: 'not-configured', data: null, error: 'API Key IntelX non configurata.' };
   state.rateUsage.intelx++;
+  const base = state.intelxTier === 'paid' ? 'https://2.intelx.io' : 'https://free.intelx.io';
   try {
-    const searchRes = await fetchTimeout('https://2.intelx.io/intelligent/search', {
+    const searchRes = await fetchTimeout(proxied(`${base}/intelligent/search`), {
       method: 'POST',
       headers: { 'x-key': key, 'Content-Type': 'application/json' },
       body: JSON.stringify({ term: kw, maxresults: 10, media: 0, target: 0 })
     });
-    if (!searchRes.ok) throw new Error('HTTP ' + searchRes.status);
+    if (!searchRes.ok) throw new Error(await httpErr(searchRes));
     const searchData = await searchRes.json();
     if (!searchData.id) return { service: 'intelx', status: 'success', data: { results: [] }, count: 0 };
     await new Promise(r => setTimeout(r, 700));
-    const resultRes = await fetchTimeout(`https://2.intelx.io/intelligent/search/result?id=${encodeURIComponent(searchData.id)}&limit=10`, {
+    const resultRes = await fetchTimeout(proxied(`${base}/intelligent/search/result?id=${encodeURIComponent(searchData.id)}&limit=10`), {
       headers: { 'x-key': key }
     });
-    if (!resultRes.ok) throw new Error('HTTP ' + resultRes.status);
+    if (!resultRes.ok) throw new Error(await httpErr(resultRes));
     const resultData = await resultRes.json();
     const records = resultData.records || [];
     return { service: 'intelx', status: 'success', count: records.length, data: { results: records.map(r => ({
@@ -851,8 +902,8 @@ async function callHIBP(kw) {
     const hash = await sha1(kw);
     const prefix = hash.slice(0, 5);
     const suffix = hash.slice(5);
-    const res = await fetchTimeout(`https://api.pwnedpasswords.com/range/${prefix}`);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const res = await fetchTimeout(proxied(`https://api.pwnedpasswords.com/range/${prefix}`));
+    if (!res.ok) throw new Error(await httpErr(res));
     const text = await res.text();
     const lines = text.split('\n');
     let count = 0;
@@ -872,13 +923,13 @@ async function callBreachDirectory(kw) {
   if (!key) return { service: 'breachdirectory', status: 'not-configured', error: 'RapidAPI Key non configurata.' };
   state.rateUsage.breachdirectory++;
   try {
-    const res = await fetchTimeout(`https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(kw)}`, {
+    const res = await fetchTimeout(proxied(`https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(kw)}`), {
       headers: {
         'X-RapidAPI-Key': key,
         'X-RapidAPI-Host': 'breachdirectory.p.rapidapi.com'
       }
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) throw new Error(await httpErr(res));
     const data = await res.json();
     return { service: 'breachdirectory', status: 'success', count: data.found ? (data.result || []).length : 0, data };
   } catch (e) {
@@ -898,10 +949,10 @@ async function callLeakIX(kw, type) {
     } else {
       url = `https://leakix.net/search?q=${encodeURIComponent(kw)}&scope=leak`;
     }
-    const res = await fetchTimeout(url, {
+    const res = await fetchTimeout(proxied(url), {
       headers: { 'api-key': key, 'Accept': 'application/json' }
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) throw new Error(await httpErr(res));
     const data = await res.json();
     const items = Array.isArray(data) ? data : (data.Leaks || data.Services || []);
     return { service: 'leakix', status: 'success', count: items.length, data: { items } };
@@ -918,10 +969,10 @@ async function callDeHashed(kw) {
   state.rateUsage.dehashed++;
   try {
     const auth = btoa(`${email}:${key}`);
-    const res = await fetchTimeout(`https://api.dehashed.com/search?query=${encodeURIComponent(kw)}`, {
+    const res = await fetchTimeout(proxied(`https://api.dehashed.com/search?query=${encodeURIComponent(kw)}`), {
       headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' }
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) throw new Error(await httpErr(res));
     const data = await res.json();
     return { service: 'dehashed', status: 'success', count: data.total || (data.entries || []).length, data };
   } catch (e) {
@@ -1062,7 +1113,7 @@ function renderResults(payload) {
   const okServices = results.filter(r => r.status === 'success').length;
 
   const corsWarnings = results.filter(r => r.cors);
-  const corsBox = corsWarnings.length ? `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>Avviso CORS:</strong> ${corsWarnings.map(c => SERVICES[c.service].name).join(', ')} non raggiungibili dal browser. Molti provider OSINT bloccano richieste cross-origin dirette: in produzione usa un proxy server-side.</div></div>` : '';
+  const corsBox = corsWarnings.length ? `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>Avviso CORS:</strong> ${corsWarnings.map(c => SERVICES[c.service].name).join(', ')} non raggiungibili dal browser. ${state.corsProxy ? 'Il CORS proxy configurato non ha funzionato — controlla che sia attivo.' : 'Vai in <a href="#config">Configurazione</a> e imposta un <strong>CORS Proxy</strong> per inoltrare le richieste.'}</div></div>` : '';
 
   c.innerHTML = `
     <div class="card">
@@ -1330,6 +1381,20 @@ function renderConfigForm() {
 
   $('#aiConsent').checked = state.aiConsent;
   $('#aiConsent').onchange = e => { state.aiConsent = e.target.checked; };
+
+  // CORS proxy
+  const proxyInp = $('#corsProxyInput');
+  if (proxyInp) {
+    proxyInp.value = state.corsProxy;
+    proxyInp.addEventListener('input', () => { state.corsProxy = proxyInp.value.trim(); });
+    $('#clearProxy').onclick = () => { proxyInp.value = ''; state.corsProxy = ''; };
+  }
+
+  // IntelX tier
+  $$('input[name=intelxTier]').forEach(r => {
+    r.checked = (r.value === state.intelxTier);
+    r.onchange = () => { if (r.checked) state.intelxTier = r.value; };
+  });
 
   $('#soarUrl').value = `${location.origin}${location.pathname}?apikey=<MASTER_KEY>&q=<keyword>&type=email`;
   $('#copySoarUrl').onclick = () => {
