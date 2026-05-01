@@ -555,7 +555,7 @@ input, select, textarea { font-family: inherit; }
         <div class="warning-box" id="firstRunHint">
           <i data-lucide="info" class="icon"></i>
           <div>
-            <strong>Prima volta?</strong> Vai in <a href="#config">Configurazione</a> (icona ingranaggio nella sidebar) e inserisci almeno una API Key. Il <strong>CORS Proxy</strong> è già impostato di default a <code>corsproxy.io</code> — necessario perché i provider OSINT bloccano le chiamate dirette dal browser.
+            <strong>Prima volta?</strong> Vai in <a href="#config">Configurazione</a> (icona ingranaggio nella sidebar) e: (1) deploya il Cloudflare Worker (snippet pronto), (2) incolla la sua URL nel campo CORS Proxy, (3) inserisci almeno una API Key. I provider OSINT bloccano le chiamate dirette dal browser, quindi il Worker proxy è obbligatorio.
           </div>
         </div>
 
@@ -670,11 +670,12 @@ input, select, textarea { font-family: inherit; }
             <div><strong>Limite proxy pubblici:</strong> servizi come <code>corsproxy.io</code> spesso <strong>strippano gli header custom</strong> (x-key, Authorization, X-RapidAPI-Key) — quindi le API che usano questi header per autenticarsi falliscono comunque. <strong>Per usare davvero questa app deploya il tuo Cloudflare Worker</strong> (vedi sotto, 2 minuti gratis).</div>
           </div>
           <div class="input-group">
-            <input id="corsProxyInput" class="input" placeholder="https://corsproxy.io/?" value="" />
+            <input id="corsProxyInput" class="input" placeholder="https://il-tuo-worker.workers.dev/" value="" />
             <button class="btn btn-ghost" id="clearProxy" title="Rimuovi proxy"><i data-lucide="x"></i></button>
           </div>
           <p class="muted" style="margin-top: 8px; font-size: 0.78rem;">
-            Default attivo: <code>https://corsproxy.io/?</code> — svuota il campo per disabilitare e chiamare i provider direttamente.
+            Anteprima URL chiamata: <code id="proxyPreview" style="font-size:0.72rem;">—</code><br>
+            Esempi accettati: <code>https://tuo-worker.workers.dev/</code> · <code>https://tuo-worker.workers.dev/?</code> · <code>https://corsproxy.io/?</code>. Il <code>?</code> finale viene aggiunto automaticamente.
           </p>
 
           <div class="divider"></div>
@@ -687,35 +688,53 @@ input, select, textarea { font-family: inherit; }
           <div class="row-flex" style="margin-bottom: 8px;">
             <button class="btn btn-ghost btn-sm" id="copyWorker"><i data-lucide="copy"></i> Copia codice Worker</button>
           </div>
-<pre id="workerCode" style="background:var(--bg-2);padding:14px;border-radius:8px;overflow:auto;max-height:280px;font-size:0.78rem;line-height:1.45;">export default {
+<pre id="workerCode" style="background:var(--bg-2);padding:14px;border-radius:8px;overflow:auto;max-height:280px;font-size:0.78rem;line-height:1.45;">const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': '*',
+  'Access-Control-Expose-Headers': '*',
+  'Access-Control-Max-Age': '86400'
+};
+
+export default {
   async fetch(request) {
+    // Preflight CORS: rispondi subito senza chiamare l'upstream
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS });
+    }
+
     const url = new URL(request.url);
     const target = url.search.slice(1); // tutto dopo il "?"
-    if (!target) return new Response('Missing target URL', { status: 400 });
+    if (!target) {
+      return new Response('Missing target URL. Usage: ' + url.origin + '/?https://api.example.com/path',
+        { status: 400, headers: { ...CORS, 'Content-Type': 'text/plain' } });
+    }
+
     let targetUrl;
     try { targetUrl = new URL(decodeURIComponent(target)); }
-    catch { return new Response('Invalid target URL', { status: 400 }); }
+    catch { return new Response('Invalid target URL', { status: 400, headers: CORS }); }
 
+    // Inoltra header del client, rimuovendo quelli che non vanno propagati
     const headers = new Headers(request.headers);
-    headers.delete('host');
-    headers.delete('origin');
-    headers.delete('referer');
+    ['host','origin','referer','cf-connecting-ip','cf-ipcountry','cf-ray','cf-visitor','x-forwarded-for','x-forwarded-proto','x-real-ip']
+      .forEach(h => headers.delete(h));
 
-    const proxied = await fetch(targetUrl.toString(), {
-      method: request.method,
-      headers,
-      body: ['GET','HEAD'].includes(request.method) ? undefined : request.body,
-      redirect: 'follow'
-    });
-
-    const respHeaders = new Headers(proxied.headers);
-    respHeaders.set('Access-Control-Allow-Origin', '*');
-    respHeaders.set('Access-Control-Allow-Methods', '*');
-    respHeaders.set('Access-Control-Allow-Headers', '*');
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: respHeaders });
+    let upstream;
+    try {
+      upstream = await fetch(targetUrl.toString(), {
+        method: request.method,
+        headers,
+        body: ['GET','HEAD'].includes(request.method) ? undefined : request.body,
+        redirect: 'follow'
+      });
+    } catch (e) {
+      return new Response('Upstream fetch failed: ' + e.message,
+        { status: 502, headers: { ...CORS, 'Content-Type': 'text/plain' } });
     }
-    return new Response(proxied.body, { status: proxied.status, headers: respHeaders });
+
+    const respHeaders = new Headers(upstream.headers);
+    Object.entries(CORS).forEach(([k, v]) => respHeaders.set(k, v));
+    return new Response(upstream.body, { status: upstream.status, headers: respHeaders });
   }
 };</pre>
         </div>
@@ -801,7 +820,7 @@ const state = {
     master: ''
   },
   intelxTier: 'free',           // 'free' -> free.intelx.io, 'paid' -> 2.intelx.io
-  corsProxy: 'https://corsproxy.io/?',  // default attivo per usabilità out-of-the-box
+  corsProxy: '',                 // utente deve impostare il proprio Cloudflare Worker
   aiConsent: false,
   recent: [],
   lastResults: null,
@@ -817,9 +836,11 @@ const state = {
 // Wrapper che applica il CORS proxy se configurato
 function proxied(url) {
   if (!state.corsProxy) return url;
-  const p = state.corsProxy.endsWith('?') || state.corsProxy.endsWith('=')
-    ? state.corsProxy
-    : state.corsProxy.replace(/\/?$/, '/');
+  let p = state.corsProxy.trim();
+  // Normalizza: se non termina con '?' o '=' aggiungi '/?' così il target finisce nella query string
+  if (!p.endsWith('?') && !p.endsWith('=')) {
+    p = p.replace(/\/+$/, '') + '/?';
+  }
   return p + encodeURIComponent(url);
 }
 
@@ -1448,10 +1469,25 @@ function renderConfigForm() {
 
   // CORS proxy
   const proxyInp = $('#corsProxyInput');
+  const proxyPrev = $('#proxyPreview');
+  const updatePreview = () => {
+    if (!proxyPrev) return;
+    proxyPrev.textContent = state.corsProxy
+      ? proxied('https://free.intelx.io/intelligent/search')
+      : 'proxy disattivato — chiamata diretta al provider';
+  };
   if (proxyInp) {
     proxyInp.value = state.corsProxy;
-    proxyInp.addEventListener('input', () => { state.corsProxy = proxyInp.value.trim(); });
-    $('#clearProxy').onclick = () => { proxyInp.value = ''; state.corsProxy = ''; };
+    updatePreview();
+    proxyInp.addEventListener('input', () => {
+      state.corsProxy = proxyInp.value.trim();
+      updatePreview();
+    });
+    $('#clearProxy').onclick = () => {
+      proxyInp.value = '';
+      state.corsProxy = '';
+      updatePreview();
+    };
   }
   const copyWorkerBtn = $('#copyWorker');
   if (copyWorkerBtn) copyWorkerBtn.onclick = () => {
