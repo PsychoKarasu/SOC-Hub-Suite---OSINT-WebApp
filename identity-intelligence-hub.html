@@ -625,9 +625,95 @@ input, select, textarea { font-family: inherit; }
   border-radius: 999px;
   font-size: 0.78rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
 }
 .chip:hover { background: var(--bg-3); border-color: var(--border-strong); }
+.chip-clickable {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-2));
+}
+.chip-clickable:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-2));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.chip-clickable .chip-kw { color: var(--accent); font-weight: 600; }
+.chip-arrow { color: var(--accent); font-weight: 700; margin-left: 2px; }
+.chip-clickable i { color: var(--accent); }
+
+/* ========== SEARCH CARDS (history) ========== */
+.search-card {
+  background: linear-gradient(180deg, var(--bg-1) 0%, color-mix(in srgb, var(--bg-1) 92%, var(--bg-0)) 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-card:hover { border-color: color-mix(in srgb, var(--accent) 25%, var(--border)); }
+.search-card.is-open {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  box-shadow: 0 14px 40px rgba(0,0,0,0.35), 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent) inset;
+}
+.search-card-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 18px 22px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.search-card-head:hover { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+.search-card-head-main { flex: 1; min-width: 0; }
+.search-card-head-side { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.search-card-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.search-card-kw {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  word-break: break-all;
+}
+.search-card-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  padding: 2px 8px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-radius: 4px;
+}
+.search-card-meta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--text-3);
+}
+.search-card-meta i { vertical-align: middle; }
+.search-card-meta strong { color: var(--text-1); font-weight: 600; }
+.svc-badges-mini { gap: 6px; }
+.svc-badges-mini .svc-badge { padding: 4px 10px; font-size: 0.7rem; }
+.search-card-toggle {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: grid; place-items: center;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  transition: all 0.18s;
+}
+.search-card.is-open .search-card-toggle { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.search-card.is-open .search-card-toggle .chev { transform: rotate(180deg); }
+.search-card-body {
+  display: none;
+  padding: 0 22px 22px;
+}
+.search-card.is-open .search-card-body { display: block; animation: cardExpand 0.3s ease; }
+@keyframes cardExpand {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
 
 .warning-box {
   display: flex; gap: 12px;
@@ -1367,9 +1453,9 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v2.0</span>
+        <span>v2.1</span>
         <span class="version-sep">·</span>
-        <span>NOVA</span>
+        <span>history</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
@@ -1986,7 +2072,8 @@ const state = {
   corsProxy: '',                 // utente deve impostare il proprio Cloudflare Worker
   aiConsent: false,
   recent: [],
-  lastResults: null,
+  searchHistory: [],     // tutte le ricerche eseguite, in ordine cronologico (più recente in cima)
+  lastResults: null,     // alias dell'ultima entry (compatibilità)
   rateUsage: {
     intelx: 0,
     hibp: 0,
@@ -2225,6 +2312,17 @@ const I18N = {
     'col.compromised': 'Compromised',
     'col.safe': 'Safe',
     'col.unknown': 'unknown',
+    'history.eyebrow': 'Search History',
+    'history.empty.title': 'No searches yet',
+    'history.empty.body': 'Open Search, enter a keyword and hit Run. All your searches will be archived here, click to expand each one.',
+    'history.delete': 'Delete',
+    'history.deleteConfirm': 'Delete this search from history?',
+    'history.deleteAll': 'Clear all history',
+    'history.deleteAllConfirm': 'Delete all search history? This cannot be undone.',
+    'history.expand': 'Expand details',
+    'history.collapse': 'Collapse',
+    'history.results': 'hits',
+    'history.svcs': 'sources',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   },
@@ -2415,6 +2513,17 @@ const I18N = {
     'col.compromised': 'Compromessa',
     'col.safe': 'Sicura',
     'col.unknown': 'sconosciuto',
+    'history.eyebrow': 'Cronologia Ricerche',
+    'history.empty.title': 'Nessuna ricerca ancora',
+    'history.empty.body': 'Apri Ricerca, inserisci una keyword e premi Avvia. Tutte le tue ricerche verranno archiviate qui, clicca per espandere ognuna.',
+    'history.delete': 'Elimina',
+    'history.deleteConfirm': 'Eliminare questa ricerca dalla cronologia?',
+    'history.deleteAll': 'Cancella tutta la cronologia',
+    'history.deleteAllConfirm': 'Cancellare tutta la cronologia delle ricerche? Operazione irreversibile.',
+    'history.expand': 'Espandi dettagli',
+    'history.collapse': 'Comprimi',
+    'history.results': 'hit',
+    'history.svcs': 'fonti',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   }
@@ -2451,7 +2560,7 @@ function setLang(lang) {
     // Re-render section attiva
     if (route === 'limits') renderLimits();
     if (route === 'config') updatePersistStatus();
-    if (route === 'results' && state.lastResults) renderResults(state.lastResults);
+    if (route === 'results') renderAllResults();
     // Avatar idle msg
     const stage = document.getElementById('avatarStage');
     if (stage && stage.dataset.state === 'idle') {
@@ -2516,11 +2625,19 @@ function schedulePersist() {
 async function persistConfig() {
   if (!state.authSession?.key) return;
   try {
+    // History compressa: max 50 entry, senza aiAnalysis (può essere grossa, si rigenera lazy)
+    const histSlim = state.searchHistory.slice(0, 50).map(e => ({
+      id: e.id, kw: e.kw, type: e.type, results: e.results,
+      elapsed: e.elapsed, timestamp: e.timestamp,
+      aiAnalysis: e.aiAnalysis  // mantengo se già caricato per non rifare la chiamata
+    }));
     const payload = {
       apiKeys: { ...state.apiKeys, master: '' },
       intelxTier: state.intelxTier,
       corsProxy: state.corsProxy,
       aiConsent: state.aiConsent,
+      searchHistory: histSlim,
+      recent: state.recent.slice(0, 10),
       savedAt: new Date().toISOString()
     };
     const blob = await encryptBlob(state.authSession.key, payload);
@@ -2540,6 +2657,11 @@ async function loadPersistedConfig(masterKey) {
     if (data.intelxTier) state.intelxTier = data.intelxTier;
     if (typeof data.corsProxy === 'string') state.corsProxy = data.corsProxy;
     if (typeof data.aiConsent === 'boolean') state.aiConsent = data.aiConsent;
+    if (Array.isArray(data.searchHistory)) {
+      state.searchHistory = data.searchHistory;
+      state.lastResults = data.searchHistory[0] || null;
+    }
+    if (Array.isArray(data.recent)) state.recent = data.recent;
     state.lastSavedAt = data.savedAt;
     return true;
   } catch (e) { return false; }
@@ -2928,13 +3050,44 @@ function updateHeroStats() {
 
 function renderRecent() {
   const c = $('#recentChips');
-  if (!state.recent.length) { c.innerHTML = '<span class="muted">Nessuna ricerca eseguita.</span>'; return; }
+  if (!c) return;
+  if (!state.recent.length) { c.innerHTML = `<span class="muted">${t('search.recent.empty')}</span>`; return; }
   c.innerHTML = '';
   state.recent.slice(0, 10).forEach(r => {
+    const hasReport = r.id && state.searchHistory.find(e => e.id === r.id);
     const chip = document.createElement('span');
-    chip.className = 'chip';
-    chip.innerHTML = `<i data-lucide="search" style="width:12px;height:12px;"></i> ${escapeHtml(r.kw)} <span class="muted">(${r.type})</span>`;
-    chip.onclick = () => { $('#kw').value = r.kw; $('#kwType').value = r.type; updateServiceChecks(); };
+    chip.className = 'chip' + (hasReport ? ' chip-clickable' : '');
+    chip.innerHTML = `
+      <i data-lucide="${hasReport ? 'file-text' : 'search'}" style="width:12px;height:12px;"></i>
+      <span class="chip-kw">${escapeHtml(r.kw)}</span>
+      <span class="muted">(${r.type})</span>
+      ${hasReport ? `<span class="chip-arrow">→</span>` : ''}
+    `;
+    chip.title = hasReport
+      ? (currentLang === 'it' ? 'Apri il report nella tab Risultati' : 'Open report in Results tab')
+      : (currentLang === 'it' ? 'Pre-compila il form di ricerca' : 'Pre-fill the search form');
+    chip.onclick = (e) => {
+      if (hasReport) {
+        // Vai alla tab Results e apri/scrolla questa entry
+        location.hash = '#results';
+        // Espandi quella entry e scrolla
+        setTimeout(() => {
+          state.searchHistory.forEach(en => { /* nessun toggle */ });
+          renderAllResults(r.id);
+          // Forza l'apertura della card focus
+          setTimeout(() => {
+            const card = document.getElementById('search-card-' + r.id);
+            if (card) card.classList.add('is-open');
+            loadAIForEntry(r.id);
+          }, 50);
+        }, 50);
+      } else {
+        // Pre-compila form e vai a search
+        $('#kw').value = r.kw;
+        $('#kwType').value = r.type;
+        updateServiceChecks();
+      }
+    };
     c.appendChild(chip);
   });
   lucide.createIcons();
@@ -2977,60 +3130,77 @@ function isServiceConfigured(id) {
   }
 }
 
-function renderResults(payload) {
+// Renderizza tutta la cronologia delle ricerche come card collassabili.
+// Se focusId è passato, quella card sarà espansa di default e scrollata in vista.
+function renderAllResults(focusId) {
   const c = $('#resultsContainer');
-  const { kw, type, results, elapsed, timestamp } = payload;
+  if (!c) return;
+  if (!state.searchHistory.length) {
+    c.innerHTML = `
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="empty" style="padding: 80px 20px;">
+          <div class="empty-icon"><i data-lucide="radar" style="width:32px;height:32px;color:var(--accent);"></i></div>
+          <h3>${t('history.empty.title')}</h3>
+          <p style="max-width: 400px; margin: 0 auto;">${t('history.empty.body')}</p>
+        </div>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+  // Toolbar in cima
+  const header = `<div class="row-flex no-print" style="justify-content: space-between; margin-bottom: 14px;">
+    <div class="muted" style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;">
+      <span style="color:var(--accent);">${state.searchHistory.length}</span> ${state.searchHistory.length === 1 ? (currentLang==='it'?'ricerca':'search') : (currentLang==='it'?'ricerche':'searches')}
+    </div>
+    <button class="btn btn-ghost btn-sm" id="clearHistoryBtn"><i data-lucide="trash-2"></i> ${t('history.deleteAll')}</button>
+  </div>`;
+  c.innerHTML = header + state.searchHistory.map(entry => renderSearchCard(entry, entry.id === focusId)).join('');
+  wireSearchCardEvents();
+  lucide.createIcons();
+  // Scroll all'entry messa a fuoco
+  if (focusId) {
+    const el = document.getElementById('search-card-' + focusId);
+    if (el) {
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+      // Lazy load AI per questa entry
+      loadAIForEntry(focusId);
+    }
+  }
+  // Listener pulisci tutta history
+  const clearAllBtn = $('#clearHistoryBtn');
+  if (clearAllBtn) clearAllBtn.onclick = () => {
+    if (!confirm(t('history.deleteAllConfirm'))) return;
+    state.searchHistory = [];
+    state.lastResults = null;
+    state.recent = [];
+    updateHeroStats();
+    renderAllResults();
+    renderRecent();
+    schedulePersist();
+  };
+}
+
+// Costruisce HTML per una singola ricerca card (collassabile)
+function renderSearchCard(entry, expanded) {
+  const { id, kw, type, results, elapsed, timestamp } = entry;
   const totalCount = results.reduce((a, r) => a + (r.count || 0), 0);
   const okServices = results.filter(r => r.status === 'success').length;
+  const errServices = results.filter(r => r.status === 'error').length;
+  const locale = currentLang === 'it' ? 'it-IT' : 'en-US';
+  const isExpanded = !!expanded;
+
+  const svcBadges = results.map(r => {
+    let cls = 'gray';
+    if (r.status === 'success' && (r.count || 0) > 0) cls = 'green';
+    else if (r.status === 'error' || r.status === 'not-configured') cls = 'red';
+    return `<span class="svc-badge ${cls}"><span class="svc-dot" style="background:${SERVICES[r.service].color}"></span>${SERVICES[r.service].name} · ${r.status === 'success' ? (r.count || 0) : (r.status === 'not-configured' ? 'n/c' : 'err')}</span>`;
+  }).join('');
 
   const corsWarnings = results.filter(r => r.cors);
   const corsBox = corsWarnings.length ? `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>${t('cors.warnBox.bold')}</strong> ${corsWarnings.map(c => SERVICES[c.service].name).join(', ')} ${t('cors.warnBox.suggest')}${state.corsProxy ? t('cors.warnBox.haveProxy') : t('cors.warnBox.noProxy.html')}</div></div>` : '';
 
-  const locale = currentLang === 'it' ? 'it-IT' : 'en-US';
-  c.innerHTML = `
-    <div class="card">
-      <div class="summary-header">
-        <div>
-          <h2>${escapeHtml(kw)}</h2>
-          <div class="meta">${t('res.type')} <strong>${type}</strong> · ${t('res.executed')} ${new Date(timestamp).toLocaleString(locale)} · ${t('res.duration')} ${elapsed}s</div>
-          <div class="meta" style="margin-top:4px;">${t('res.totalSummary').replace('{n}', `<strong>${totalCount}</strong>`).replace('{m}', `<strong>${okServices}</strong>`)}</div>
-        </div>
-        <div class="svc-badges">
-          ${results.map(r => {
-            let cls = 'gray';
-            if (r.status === 'success' && (r.count || 0) > 0) cls = 'green';
-            else if (r.status === 'error' || r.status === 'not-configured') cls = 'red';
-            return `<span class="svc-badge ${cls}"><span class="svc-dot" style="background:${SERVICES[r.service].color}"></span>${SERVICES[r.service].name} · ${r.status === 'success' ? (r.count || 0) : (r.status === 'not-configured' ? 'n/c' : 'err')}</span>`;
-          }).join('')}
-        </div>
-      </div>
-      ${corsBox}
-      <div class="row-flex no-print">
-        <button class="btn btn-ghost btn-sm" id="copyJsonBtn"><i data-lucide="copy"></i> ${t('res.copyJson')}</button>
-        <button class="btn btn-ghost btn-sm" id="exportPdfBtn"><i data-lucide="printer"></i> ${t('res.exportPdf')}</button>
-        <button class="btn btn-ghost btn-sm" id="rerunBtn"><i data-lucide="refresh-cw"></i> ${t('res.rerun')}</button>
-      </div>
-    </div>
-
-    <div class="ai-block" id="aiBlock">
-      <h2><i data-lucide="sparkles"></i> ${t('ai.title')}</h2>
-      <div class="ai-content" id="aiContent">
-        <div class="sk-line skeleton w-80"></div>
-        <div class="sk-line skeleton w-60"></div>
-        <div class="sk-line skeleton w-80"></div>
-        <div class="sk-line skeleton w-40"></div>
-      </div>
-    </div>
-
-    <div id="rawAccordions"></div>
-  `;
-
-  // Raw accordions
-  const ra = $('#rawAccordions');
-  results.forEach((r, idx) => {
+  const accordionsHtml = results.map((r, idx) => {
     const svc = SERVICES[r.service];
-    const acc = document.createElement('div');
-    acc.className = 'accordion' + (idx === 0 ? ' open' : '');
     let body = '';
     if (r.status === 'not-configured') {
       body = `<p class="muted">${escapeHtml(r.error || t('acc.notConfigured'))}</p>`;
@@ -3039,50 +3209,162 @@ function renderResults(payload) {
     } else {
       body = renderServiceData(r);
     }
-    // Trova la data più recente nei risultati per mostrarla nell'header
     const freshness = computeFreshness(r);
     const freshnessHtml = freshness ? `<span class="badge neutral" title="${freshness.label}" style="font-family:'JetBrains Mono',monospace;font-size:0.66rem;"><i data-lucide="clock" style="width:10px;height:10px;"></i> ${freshness.text}</span>` : '';
-    acc.innerHTML = `
-      <div class="accordion-head">
-        <div class="left">
-          <span class="svc-dot" style="background:${svc.color};width:12px;height:12px;"></span>
-          <strong>${svc.name}</strong>
-          <span class="badge ${r.status === 'success' && (r.count||0)>0 ? 'success' : (r.status === 'success' ? 'neutral' : 'danger')}">${r.status === 'success' ? `${r.count || 0} ${t('acc.results')}` : r.status}</span>
-          ${freshnessHtml}
+    return `
+      <div class="accordion ${idx === 0 ? 'open' : ''}">
+        <div class="accordion-head" data-toggle-acc>
+          <div class="left">
+            <span class="svc-dot" style="background:${svc.color};width:12px;height:12px;"></span>
+            <strong>${svc.name}</strong>
+            <span class="badge ${r.status === 'success' && (r.count||0)>0 ? 'success' : (r.status === 'success' ? 'neutral' : 'danger')}">${r.status === 'success' ? `${r.count || 0} ${t('acc.results')}` : r.status}</span>
+            ${freshnessHtml}
+          </div>
+          <div class="row-flex">
+            <button class="btn btn-ghost btn-sm" data-action="copy-svc" data-svc="${r.service}" data-entry="${id}"><i data-lucide="copy"></i> ${t('acc.copyJsonBtn')}</button>
+            <i data-lucide="chevron-down" class="chev"></i>
+          </div>
         </div>
-        <div class="row-flex">
-          <button class="btn btn-ghost btn-sm copy-svc-btn" data-svc="${r.service}"><i data-lucide="copy"></i> ${t('acc.copyJsonBtn')}</button>
-          <i data-lucide="chevron-down" class="chev"></i>
+        <div class="accordion-body">${body}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <article class="search-card ${isExpanded ? 'is-open' : ''}" id="search-card-${id}" data-entry="${id}">
+      <header class="search-card-head" data-action="toggle-card" data-entry="${id}">
+        <div class="search-card-head-main">
+          <div class="search-card-title">
+            <span class="search-card-kw">${escapeHtml(kw)}</span>
+            <span class="search-card-type">${type}</span>
+          </div>
+          <div class="search-card-meta">
+            <span><i data-lucide="clock" style="width:11px;height:11px;"></i> ${new Date(timestamp).toLocaleString(locale)}</span>
+            <span>·</span>
+            <span><strong>${totalCount}</strong> ${t('history.results')}</span>
+            <span>·</span>
+            <span><strong>${okServices}</strong> ${t('history.svcs')}</span>
+            ${errServices > 0 ? `<span>·</span><span style="color:var(--danger);">${errServices} err</span>` : ''}
+            <span>·</span>
+            <span class="muted mono" style="font-size:0.72rem;">${elapsed}s</span>
+          </div>
         </div>
+        <div class="search-card-head-side">
+          <div class="svc-badges svc-badges-mini">${svcBadges}</div>
+          <button class="search-card-toggle" aria-label="toggle"><i data-lucide="chevron-down" class="chev"></i></button>
+        </div>
+      </header>
+      <div class="search-card-body">
+        ${corsBox}
+        <div class="row-flex no-print" style="margin-bottom: 14px;">
+          <button class="btn btn-ghost btn-sm" data-action="copy-json" data-entry="${id}"><i data-lucide="copy"></i> ${t('res.copyJson')}</button>
+          <button class="btn btn-ghost btn-sm" data-action="export-pdf" data-entry="${id}"><i data-lucide="printer"></i> ${t('res.exportPdf')}</button>
+          <button class="btn btn-ghost btn-sm" data-action="rerun" data-entry="${id}"><i data-lucide="refresh-cw"></i> ${t('res.rerun')}</button>
+          <div class="spacer"></div>
+          <button class="btn btn-ghost btn-sm" data-action="delete-entry" data-entry="${id}" style="color: var(--danger);"><i data-lucide="trash-2"></i> ${t('history.delete')}</button>
+        </div>
+        <div class="ai-block">
+          <h2><i data-lucide="sparkles"></i> ${t('ai.title')}</h2>
+          <div class="ai-content" id="ai-content-${id}">
+            <div class="sk-line skeleton w-80"></div>
+            <div class="sk-line skeleton w-60"></div>
+            <div class="sk-line skeleton w-80"></div>
+            <div class="sk-line skeleton w-40"></div>
+          </div>
+        </div>
+        ${accordionsHtml}
       </div>
-      <div class="accordion-body">${body}</div>
-    `;
-    ra.appendChild(acc);
-  });
+    </article>
+  `;
+}
 
-  $$('.accordion-head').forEach(h => h.onclick = (e) => {
-    if (e.target.closest('button')) return;
-    h.parentElement.classList.toggle('open');
-  });
-  $$('.copy-svc-btn').forEach(b => b.onclick = (e) => {
+// Lazy-load AI per una entry (chiamato quando viene espansa la prima volta)
+async function loadAIForEntry(id) {
+  const entry = state.searchHistory.find(e => e.id === id);
+  if (!entry) return;
+  const c = document.getElementById('ai-content-' + id);
+  if (!c) return;
+  // Se già caricato in cache, mostra subito (no re-fetch)
+  if (entry.aiAnalysis) {
+    c.innerHTML = marked.parse(entry.aiAnalysis);
+    return;
+  }
+  if (entry.aiLoading) return; // already in flight
+  if (!state.apiKeys.anthropic) {
+    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>${t('ai.needKey.html')}</div></div>`;
+    lucide.createIcons();
+    return;
+  }
+  if (!state.aiConsent) {
+    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>${t('ai.needConsent.html')}</div></div>`;
+    lucide.createIcons();
+    return;
+  }
+  entry.aiLoading = true;
+  const out = await callClaude(entry.kw, entry.type, entry.results);
+  entry.aiLoading = false;
+  // L'utente potrebbe aver navigato altrove
+  const c2 = document.getElementById('ai-content-' + id);
+  if (!c2) return;
+  if (out.error) {
+    c2.innerHTML = `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>${t('ai.error.bold')}</strong> ${escapeHtml(out.error)}</div></div>`;
+    lucide.createIcons();
+    return;
+  }
+  entry.aiAnalysis = out.text;
+  c2.innerHTML = marked.parse(out.text);
+}
+
+function wireSearchCardEvents() {
+  const c = $('#resultsContainer');
+  if (!c) return;
+  c.onclick = async (e) => {
+    const target = e.target.closest('[data-action]') || e.target.closest('[data-toggle-acc]');
+    if (!target) return;
     e.stopPropagation();
-    const svc = b.dataset.svc;
-    const r = results.find(x => x.service === svc);
-    navigator.clipboard.writeText(JSON.stringify(r, null, 2));
-    toast(`${t('res.svcCopyOk')} ${SERVICES[svc].name}.`, 'success');
-  });
-  $('#copyJsonBtn').onclick = async () => {
-    const unified = { ...payload, aiAnalysis: state.lastResults?.aiAnalysis || null };
-    await navigator.clipboard.writeText(JSON.stringify(unified, null, 2));
-    toast(t('res.copyOk'), 'success');
+    // Accordion toggle
+    if (target.hasAttribute('data-toggle-acc')) {
+      if (e.target.closest('button')) return; // bottoni interni non aprono
+      target.parentElement.classList.toggle('open');
+      return;
+    }
+    const action = target.dataset.action;
+    const entryId = target.dataset.entry;
+    const entry = state.searchHistory.find(x => x.id === entryId);
+    if (action === 'toggle-card') {
+      const card = document.getElementById('search-card-' + entryId);
+      if (!card) return;
+      const wasOpen = card.classList.contains('is-open');
+      card.classList.toggle('is-open');
+      if (!wasOpen) loadAIForEntry(entryId);
+      return;
+    }
+    if (!entry) return;
+    if (action === 'copy-json') {
+      const unified = { ...entry, aiAnalysis: entry.aiAnalysis || null };
+      await navigator.clipboard.writeText(JSON.stringify(unified, null, 2));
+      toast(t('res.copyOk'), 'success');
+    } else if (action === 'export-pdf') {
+      window.print();
+    } else if (action === 'rerun') {
+      $('#kw').value = entry.kw;
+      $('#kwType').value = entry.type;
+      location.hash = '#search';
+    } else if (action === 'delete-entry') {
+      if (!confirm(t('history.deleteConfirm'))) return;
+      state.searchHistory = state.searchHistory.filter(x => x.id !== entryId);
+      state.recent = state.recent.filter(x => x.id !== entryId);
+      if (state.lastResults?.id === entryId) state.lastResults = state.searchHistory[0] || null;
+      updateHeroStats();
+      renderAllResults();
+      renderRecent();
+      schedulePersist();
+    } else if (action === 'copy-svc') {
+      const svc = target.dataset.svc;
+      const r = entry.results.find(x => x.service === svc);
+      navigator.clipboard.writeText(JSON.stringify(r, null, 2));
+      toast(`${t('res.svcCopyOk')} ${SERVICES[svc].name}.`, 'success');
+    }
   };
-  $('#exportPdfBtn').onclick = () => window.print();
-  $('#rerunBtn').onclick = () => { location.hash = '#search'; };
-
-  lucide.createIcons();
-
-  // Trigger AI block
-  loadAIAnalysis(kw, type, results);
 }
 
 // Estrae la data più recente dai dati grezzi del connettore + un'etichetta human-readable
@@ -3180,27 +3462,7 @@ function renderServiceData(r) {
   return `<p class="muted">${t('acc.noStructured')}</p><pre style="background:var(--bg-2);padding:12px;border-radius:6px;overflow:auto;max-height:240px;font-size:0.78rem;">${escapeHtml(JSON.stringify(r.data, null, 2))}</pre>`;
 }
 
-async function loadAIAnalysis(kw, type, results) {
-  const c = $('#aiContent');
-  if (!state.apiKeys.anthropic) {
-    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>${t('ai.needKey.html')}</div></div>`;
-    lucide.createIcons();
-    return;
-  }
-  if (!state.aiConsent) {
-    c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>${t('ai.needConsent.html')}</div></div>`;
-    lucide.createIcons();
-    return;
-  }
-  const out = await callClaude(kw, type, results);
-  if (out.error) {
-    c.innerHTML = `<div class="warning-box"><i data-lucide="alert-triangle" class="icon"></i><div><strong>${t('ai.error.bold')}</strong> ${escapeHtml(out.error)}</div></div>`;
-    lucide.createIcons();
-    return;
-  }
-  state.lastResults.aiAnalysis = out.text;
-  c.innerHTML = marked.parse(out.text);
-}
+// loadAIAnalysis: legacy single-entry (sostituita da loadAIForEntry per le history)
 
 /* ============ Limits Section ============ */
 function renderLimits() {
@@ -3460,6 +3722,7 @@ function setRoute(name) {
     renderServiceStatusGrid();
     updateHeroStats();
   }
+  if (name === 'results') renderAllResults();
 }
 
 window.addEventListener('hashchange', () => {
@@ -3588,12 +3851,16 @@ async function triggerSearch() {
   `;
 
   const payload = await runSearch(kw, type, services);
-  state.lastResults = payload;
-  state.recent.unshift({ kw, type });
+  // Crea entry univoca e aggiungi in cima alla history
+  const entry = { id: 'h' + Date.now() + Math.random().toString(36).slice(2,6), ...payload, aiAnalysis: null };
+  state.searchHistory.unshift(entry);
+  state.lastResults = entry;
+  state.recent.unshift({ kw, type, id: entry.id });
   state.recent = state.recent.slice(0, 10);
   renderRecent();
   updateHeroStats();
-  renderResults(payload);
+  renderAllResults(entry.id);
+  schedulePersist();
 
   // Avatar feedback
   const okSvc = payload.results.filter(r => r.status === 'success').length;
