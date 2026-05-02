@@ -1538,9 +1538,9 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v2.6</span>
+        <span>v2.7</span>
         <span class="version-sep">·</span>
-        <span>avatar-arch</span>
+        <span>zero-import</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
@@ -2326,6 +2326,31 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
           </div>
         </div>
 
+        <!-- Production Bundle -->
+        <div class="card">
+          <h3 data-i18n="bundle.title">Production Bundle (zero-import onboarding)</h3>
+          <p class="muted" style="margin-bottom: 12px;" data-i18n="bundle.desc">
+            Bake the current API keys + proxy + tier configuration into the deployed HTML, encrypted with the Master Key. After committing the bundle line, new SOC analysts only need to login (Cloudflare Access + Master Key) — no backup file import required.
+          </p>
+          <div class="warning-box" style="background: color-mix(in srgb, var(--info) 12%, transparent); border-color: color-mix(in srgb, var(--info) 30%, transparent);">
+            <i data-lucide="info" class="icon" style="color: var(--info);"></i>
+            <div data-i18n-html="bundle.warn"><strong>How it works:</strong> the encrypted blob is shipped INSIDE the HTML on Cloudflare Pages. Only authorized emails (Access policy) can fetch the page, and only the correct Master Key can decrypt the blob. Per-user history stays in localStorage and is NOT bundled.</div>
+          </div>
+          <div class="row-flex" style="margin-top: 12px;">
+            <button class="btn btn-primary btn-sm" id="genBundleBtn"><i data-lucide="package"></i> <span data-i18n="bundle.genBtn">Generate bundle from current config</span></button>
+          </div>
+          <div id="bundleOutput" style="display:none; margin-top: 14px;">
+            <p class="muted" style="font-size: 0.82rem; margin-bottom: 6px;" data-i18n="bundle.instructions">
+              Copy the line below, replace the <code>const BUNDLED_CONFIG_BLOB = null;</code> line in <code>identity-intelligence-hub.html</code>, then commit & push. Cloudflare Pages will redeploy in ~30s.
+            </p>
+            <textarea id="bundleText" readonly rows="4" style="width:100%; font-family:'JetBrains Mono',monospace; font-size:0.72rem; background:var(--bg-2); border:1px solid var(--border); border-radius:8px; padding:10px; color:var(--text-1); resize:vertical;"></textarea>
+            <div class="row-flex" style="margin-top: 8px;">
+              <button class="btn btn-ghost btn-sm" id="copyBundleBtn"><i data-lucide="copy"></i> <span data-i18n="bundle.copy">Copy line</span></button>
+              <span id="bundleStatus" class="muted" style="font-size: 0.78rem;"></span>
+            </div>
+          </div>
+        </div>
+
         <!-- Avatar renderer selection -->
         <div class="card">
           <h3 data-i18n="avatar.title">Sakura — Avatar Renderer</h3>
@@ -2368,6 +2393,16 @@ let DEMO_FALLBACK = false;
 
 // Email per recovery Master Key (mailto link nel modal di login)
 const RECOVERY_EMAIL = 'samuel.ascone@gmail.com';
+
+// ============================================================
+// BUNDLED CONFIG BLOB
+// ============================================================
+// Encrypted blob with shared SOC config (API keys, proxy, tier).
+// Generated via Configuration → "Generate production bundle" button,
+// then committed here. Decrypted only with the right Master Key.
+// Per-user data (history, recent) stays in localStorage only.
+// Set to null to disable bundled config (require manual import).
+const BUNDLED_CONFIG_BLOB = null;
 
 // In-memory state
 const state = {
@@ -2693,6 +2728,15 @@ const I18N = {
     'avatar.desc': 'The avatar architecture supports multiple renderers, picked in priority order: Live2D → Sprite → Static → SVG (current floor). Drop production assets to upgrade fidelity without code changes.',
     'avatar.manifest': 'Asset checklist for higher fidelity',
     'avatar.active': 'Active',
+    'bundle.title': 'Production Bundle (zero-import onboarding)',
+    'bundle.desc': 'Bake the current API keys + proxy + tier configuration into the deployed HTML, encrypted with the Master Key. After committing the bundle line, new SOC analysts only need to login (Cloudflare Access + Master Key) — no backup file import required.',
+    'bundle.warn': '<strong>How it works:</strong> the encrypted blob is shipped INSIDE the HTML on Cloudflare Pages. Only authorized emails (Access policy) can fetch the page, and only the correct Master Key can decrypt the blob. Per-user history stays in localStorage and is NOT bundled.',
+    'bundle.genBtn': 'Generate bundle from current config',
+    'bundle.instructions': 'Copy the line below, replace the const BUNDLED_CONFIG_BLOB = null; line in identity-intelligence-hub.html, then commit & push. Cloudflare Pages will redeploy in ~30s.',
+    'bundle.copy': 'Copy line',
+    'bundle.copied': 'Bundle line copied. Paste it in the HTML, commit, push.',
+    'bundle.empty': 'Configure at least one API key first.',
+    'bundle.generated': 'Bundle generated. Paste line into HTML and deploy.',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   },
@@ -2914,6 +2958,15 @@ const I18N = {
     'avatar.desc': "L'architettura avatar supporta più renderer, scelti in ordine di priorità: Live2D → Sprite → Static → SVG (floor attuale). Carica gli asset di produzione per upgradare la fidelity senza modifiche al codice.",
     'avatar.manifest': 'Checklist asset per fidelity più alta',
     'avatar.active': 'Attivo',
+    'bundle.title': 'Production Bundle (onboarding zero-import)',
+    'bundle.desc': "Incorpora le API keys + proxy + tier nella HTML deployata, cifrate con la Master Key. Dopo aver committato la riga del bundle, i nuovi analyst del SOC fanno solo login (Cloudflare Access + Master Key) — niente import del file di backup.",
+    'bundle.warn': "<strong>Come funziona:</strong> il blob cifrato viaggia DENTRO l'HTML su Cloudflare Pages. Solo email autorizzate (Access policy) possono scaricare la pagina, e solo la Master Key corretta decifra il blob. La history per-user resta in localStorage e NON è bundled.",
+    'bundle.genBtn': 'Genera bundle dalla config corrente',
+    'bundle.instructions': 'Copia la riga sotto, sostituisci la riga const BUNDLED_CONFIG_BLOB = null; in identity-intelligence-hub.html, poi commit & push. Cloudflare Pages ridisegna in ~30s.',
+    'bundle.copy': 'Copia riga',
+    'bundle.copied': 'Riga del bundle copiata. Incolla nel HTML, commit, push.',
+    'bundle.empty': 'Configura prima almeno una API key.',
+    'bundle.generated': 'Bundle generato. Incolla la riga nel HTML e deploya.',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   }
@@ -3051,29 +3104,47 @@ async function persistConfig() {
 }
 
 async function loadPersistedConfig(masterKey) {
+  // 1) Prova localStorage (config personale + history dell'utente)
   const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return false;
-  try {
-    const blob = JSON.parse(raw);
-    const data = await decryptBlob(masterKey, blob);
-    if (data.apiKeys) state.apiKeys = { ...state.apiKeys, ...data.apiKeys, master: masterKey };
-    if (data.intelxTier) state.intelxTier = data.intelxTier;
-    if (typeof data.corsProxy === 'string') state.corsProxy = data.corsProxy;
-    if (typeof data.aiConsent === 'boolean') state.aiConsent = data.aiConsent;
-    if (Array.isArray(data.searchHistory)) {
-      state.searchHistory = data.searchHistory;
-      state.lastResults = data.searchHistory[0] || null;
-    }
-    if (Array.isArray(data.recent)) state.recent = data.recent;
-    if (data.rateUsage && typeof data.rateUsage === 'object') {
-      Object.assign(state.rateUsage, data.rateUsage);
-    }
-    if (data.rateResetKeys && typeof data.rateResetKeys === 'object') {
-      state.rateResetKeys = data.rateResetKeys;
-    }
-    state.lastSavedAt = data.savedAt;
-    return true;
-  } catch (e) { return false; }
+  if (raw) {
+    try {
+      const blob = JSON.parse(raw);
+      const data = await decryptBlob(masterKey, blob);
+      _applyDecryptedData(data, masterKey);
+      return 'local';
+    } catch (e) { /* prova fallback bundled */ }
+  }
+  // 2) Fallback: blob bundled in source (config SOC condivisa)
+  if (BUNDLED_CONFIG_BLOB) {
+    try {
+      const data = await decryptBlob(masterKey, BUNDLED_CONFIG_BLOB);
+      _applyDecryptedData(data, masterKey);
+      // Salva subito in localStorage cifrato così le prossime sessioni
+      // su questo browser sono indipendenti dal bundle.
+      schedulePersist();
+      return 'bundled';
+    } catch (e) { /* master key sbagliata o blob corrotto */ }
+  }
+  return false;
+}
+
+function _applyDecryptedData(data, masterKey) {
+  if (data.apiKeys) state.apiKeys = { ...state.apiKeys, ...data.apiKeys, master: masterKey };
+  if (data.intelxTier) state.intelxTier = data.intelxTier;
+  if (typeof data.corsProxy === 'string') state.corsProxy = data.corsProxy;
+  if (typeof data.aiConsent === 'boolean') state.aiConsent = data.aiConsent;
+  if (Array.isArray(data.searchHistory)) {
+    state.searchHistory = data.searchHistory;
+    state.lastResults = data.searchHistory[0] || null;
+  }
+  if (Array.isArray(data.recent)) state.recent = data.recent;
+  if (data.rateUsage && typeof data.rateUsage === 'object') {
+    Object.assign(state.rateUsage, data.rateUsage);
+  }
+  if (data.rateResetKeys && typeof data.rateResetKeys === 'object') {
+    state.rateResetKeys = data.rateResetKeys;
+  }
+  state.lastSavedAt = data.savedAt;
 }
 
 function clearPersistedConfig() {
@@ -4429,6 +4500,36 @@ function renderConfigForm() {
   };
   $('#masterHash').value = state.apiKeys.master ? '(calcolato al login)' : '';
 
+  // Production Bundle generator
+  const genBundleBtn = $('#genBundleBtn');
+  if (genBundleBtn) genBundleBtn.onclick = async () => {
+    // Check almeno una key è configurata (esclusi master e dehashedEmail)
+    const hasAny = ['intelx','rapidapi','leakix','dehashed','anthropic'].some(k => state.apiKeys[k]);
+    if (!hasAny) { toast(t('bundle.empty'), 'warning'); return; }
+    if (!state.authSession?.key) { toast('Login required', 'error'); return; }
+    const payload = {
+      apiKeys: { ...state.apiKeys, master: '' },
+      intelxTier: state.intelxTier,
+      corsProxy: state.corsProxy,
+      aiConsent: state.aiConsent
+      // NB: history e recent NON inclusi (sono per-user)
+    };
+    const blob = await encryptBlob(state.authSession.key, payload);
+    const line = `const BUNDLED_CONFIG_BLOB = ${JSON.stringify(blob)};`;
+    $('#bundleText').value = line;
+    $('#bundleOutput').style.display = 'block';
+    $('#bundleStatus').textContent = '';
+    toast(t('bundle.generated'), 'success');
+  };
+  const copyBundleBtn = $('#copyBundleBtn');
+  if (copyBundleBtn) copyBundleBtn.onclick = async () => {
+    const text = $('#bundleText').value;
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
+    $('#bundleStatus').innerHTML = `<span style="color:var(--success);">✓ copied</span>`;
+    toast(t('bundle.copied'), 'success');
+  };
+
   // Avatar renderer selection
   const avActive = $('#avActiveRenderer');
   if (avActive) avActive.textContent = Avatar.Config.activeRenderer || 'svg';
@@ -4576,30 +4677,26 @@ async function login() {
     return;
   }
   $('#loginError').style.display = 'none';
-  // Carica config cifrata se presente
+  // Carica config: prova localStorage personale, fallback al blob bundled in source
   const hadStored = localStorage.getItem(STORAGE_KEY);
-  let restored = false;
-  if (hadStored) {
-    restored = await loadPersistedConfig(key);
-    if (!restored) {
-      // Master Key diversa rispetto a quella usata per cifrare → fallisce decryption
-      $('#loginError').innerHTML = '<i data-lucide="alert-triangle" class="icon"></i><span>Master Key non corrisponde alle chiavi salvate. Inserisci la chiave originale o cancella i dati locali.</span>';
-      $('#loginError').style.display = 'flex';
-      lucide.createIcons();
-      // Mostra opzione per pulire
-      const btn = document.createElement('button');
-      btn.className = 'btn btn-ghost btn-sm';
-      btn.style.marginTop = '8px';
-      btn.innerHTML = '<i data-lucide="trash-2"></i> Cancella dati cifrati e procedi';
-      btn.onclick = () => {
-        clearPersistedConfig();
-        $('#loginError').style.display = 'none';
-        login();
-      };
-      $('#loginError').appendChild(btn);
-      lucide.createIcons();
-      return;
-    }
+  const restored = await loadPersistedConfig(key);
+  if (hadStored && !restored) {
+    // C'era un blob in localStorage ma non si decifra → master key sbagliata
+    $('#loginError').innerHTML = '<i data-lucide="alert-triangle" class="icon"></i><span>Master Key non corrisponde alle chiavi salvate. Inserisci la chiave originale o cancella i dati locali.</span>';
+    $('#loginError').style.display = 'flex';
+    lucide.createIcons();
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost btn-sm';
+    btn.style.marginTop = '8px';
+    btn.innerHTML = '<i data-lucide="trash-2"></i> Cancella dati cifrati e procedi';
+    btn.onclick = () => {
+      clearPersistedConfig();
+      $('#loginError').style.display = 'none';
+      login();
+    };
+    $('#loginError').appendChild(btn);
+    lucide.createIcons();
+    return;
   }
   $('#loginModal').classList.remove('open');
   $('#app').classList.add('authed');
@@ -4612,7 +4709,12 @@ async function login() {
   setRoute(initial);
   // Handle SOAR auto-search
   await handleSoarParams();
-  toast(restored ? 'Configurazione cifrata ripristinata. ✓' : 'Sessione avviata. Buona caccia! 🛡️', 'success');
+  const welcomeMsg = restored === 'bundled'
+    ? (currentLang === 'it' ? 'Configurazione SOC caricata dal bundle. ✓' : 'SOC config loaded from bundle. ✓')
+    : restored === 'local'
+    ? (currentLang === 'it' ? 'Configurazione cifrata ripristinata. ✓' : 'Encrypted configuration restored. ✓')
+    : (currentLang === 'it' ? 'Sessione avviata. Buona caccia! 🛡️' : 'Session started. Happy hunting! 🛡️');
+  toast(welcomeMsg, 'success');
   // Avatar greeting
   setAvatarState('hello', avatarMsg('hello'));
   setTimeout(() => setAvatarState('idle', avatarMsg('idle')), 4500);
