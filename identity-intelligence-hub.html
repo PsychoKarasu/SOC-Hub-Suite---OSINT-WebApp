@@ -1463,9 +1463,9 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v2.2</span>
+        <span>v2.3</span>
         <span class="version-sep">·</span>
-        <span>quota-tracking</span>
+        <span>token-saver</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
@@ -2376,6 +2376,9 @@ const I18N = {
     'history.collapse': 'Collapse',
     'history.results': 'hits',
     'history.svcs': 'sources',
+    'ai.skipped.title': 'No analysis needed',
+    'ai.skipped.body': "The search returned <strong>0 hits</strong> across all configured connectors — no breach data to analyze. Claude API call skipped to save tokens.",
+    'ai.skipped.action': 'Force run analysis anyway',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   },
@@ -2583,6 +2586,9 @@ const I18N = {
     'history.collapse': 'Comprimi',
     'history.results': 'hit',
     'history.svcs': 'fonti',
+    'ai.skipped.title': 'Analisi non necessaria',
+    'ai.skipped.body': "La ricerca non ha prodotto risultati (<strong>0 hit</strong>) su nessun connettore configurato — niente dati di breach da analizzare. Chiamata a Claude saltata per non consumare token.",
+    'ai.skipped.action': 'Esegui comunque l\'analisi',
     'lang.it': 'Italiano',
     'lang.en': 'English'
   }
@@ -3345,7 +3351,7 @@ function renderSearchCard(entry, expanded) {
 }
 
 // Lazy-load AI per una entry (chiamato quando viene espansa la prima volta)
-async function loadAIForEntry(id) {
+async function loadAIForEntry(id, force = false) {
   const entry = state.searchHistory.find(e => e.id === id);
   if (!entry) return;
   const c = document.getElementById('ai-content-' + id);
@@ -3355,7 +3361,24 @@ async function loadAIForEntry(id) {
     c.innerHTML = marked.parse(entry.aiAnalysis);
     return;
   }
-  if (entry.aiLoading) return; // already in flight
+  if (entry.aiLoading) return;
+  // Short-circuit: se la ricerca non ha prodotto hit, evita di chiamare Claude
+  // (genererebbe un report vuoto sprecando token).
+  const totalHits = entry.results.reduce((a, r) => a + (r.count || 0), 0);
+  if (totalHits === 0 && !force) {
+    c.innerHTML = `<div class="warning-box" style="background: color-mix(in srgb, var(--success) 10%, transparent); border-color: color-mix(in srgb, var(--success) 30%, transparent);">
+      <i data-lucide="check-circle" class="icon" style="color: var(--success);"></i>
+      <div>
+        <strong>${t('ai.skipped.title')}</strong><br>
+        <span>${t('ai.skipped.body')}</span>
+        <div style="margin-top: 10px;">
+          <button class="btn btn-ghost btn-sm" data-action="force-ai" data-entry="${id}"><i data-lucide="play"></i> ${t('ai.skipped.action')}</button>
+        </div>
+      </div>
+    </div>`;
+    lucide.createIcons();
+    return;
+  }
   if (!state.apiKeys.anthropic) {
     c.innerHTML = `<div class="warning-box"><i data-lucide="info" class="icon"></i><div>${t('ai.needKey.html')}</div></div>`;
     lucide.createIcons();
@@ -3366,10 +3389,15 @@ async function loadAIForEntry(id) {
     lucide.createIcons();
     return;
   }
+  // Mostra skeleton mentre carica (utile per il force run dove la card era già aperta)
+  c.innerHTML = `
+    <div class="sk-line skeleton w-80"></div>
+    <div class="sk-line skeleton w-60"></div>
+    <div class="sk-line skeleton w-80"></div>
+    <div class="sk-line skeleton w-40"></div>`;
   entry.aiLoading = true;
   const out = await callClaude(entry.kw, entry.type, entry.results);
   entry.aiLoading = false;
-  // L'utente potrebbe aver navigato altrove
   const c2 = document.getElementById('ai-content-' + id);
   if (!c2) return;
   if (out.error) {
@@ -3379,6 +3407,7 @@ async function loadAIForEntry(id) {
   }
   entry.aiAnalysis = out.text;
   c2.innerHTML = marked.parse(out.text);
+  schedulePersist();
 }
 
 function wireSearchCardEvents() {
@@ -3403,6 +3432,10 @@ function wireSearchCardEvents() {
       const wasOpen = card.classList.contains('is-open');
       card.classList.toggle('is-open');
       if (!wasOpen) loadAIForEntry(entryId);
+      return;
+    }
+    if (action === 'force-ai') {
+      loadAIForEntry(entryId, true);
       return;
     }
     if (!entry) return;
