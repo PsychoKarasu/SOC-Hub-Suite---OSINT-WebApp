@@ -753,7 +753,17 @@ input, select, textarea { font-family: inherit; }
 }
 .kpi .label { font-size: 0.78rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
 .kpi .value { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
-.kpi .delta { font-size: 0.78rem; color: var(--text-3); margin-top: 4px; }
+.kpi .delta { font-size: 0.78rem; color: var(--text-3); margin-top: 4px; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kpi-reset-tag {
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  border-radius: 4px;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
 
 .results-list { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; content-visibility: auto; }
 .result-row {
@@ -1453,9 +1463,9 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v2.1</span>
+        <span>v2.2</span>
         <span class="version-sep">·</span>
-        <span>history</span>
+        <span>quota-tracking</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
@@ -2080,8 +2090,45 @@ const state = {
     breachdirectory: 0,
     leakix: 0,
     dehashed: 0
-  }
+  },
+  rateResetKeys: {} // {intelx: 'YYYY-MM-DD', breachdirectory: 'YYYY-MM'} per detect period rollover
 };
+
+function periodKey(period) {
+  const d = new Date();
+  if (period === 'day') return d.toISOString().slice(0, 10);
+  if (period === 'month') return d.toISOString().slice(0, 7);
+  return 'never';
+}
+
+// All'avvio: per ogni servizio con resetPeriod day/month, se il period key è cambiato rispetto
+// allo storico, azzera il counter (es. è passato a un nuovo giorno -> reset IntelX).
+function maybeResetCounters() {
+  let changed = false;
+  Object.entries(SERVICES).forEach(([id, svc]) => {
+    const period = svc.resetPeriod || 'never';
+    if (period === 'never') return;
+    const cur = periodKey(period);
+    const prev = state.rateResetKeys[id];
+    if (prev !== cur) {
+      state.rateUsage[id] = 0;
+      state.rateResetKeys[id] = cur;
+      changed = true;
+    }
+  });
+  return changed;
+}
+
+// Wrapper per incrementare counter + persist
+function incRate(svc) {
+  state.rateUsage[svc] = (state.rateUsage[svc] || 0) + 1;
+  // Inizializza periodKey se mai impostato
+  const period = SERVICES[svc]?.resetPeriod;
+  if (period && period !== 'never' && !state.rateResetKeys[svc]) {
+    state.rateResetKeys[svc] = periodKey(period);
+  }
+  schedulePersist();
+}
 
 // Wrapper che applica il CORS proxy se configurato
 function proxied(url) {
@@ -2106,11 +2153,11 @@ async function httpErr(res) {
 }
 
 const SERVICES = {
-  intelx: { name: 'IntelX', color: '#4f98a3', limit: 50, plan: 'Free', planKey: 'free', limitUnit: '/giorno', unitKey: 'day', pricing: 'https://intelx.io/product' },
-  hibp: { name: 'HIBP Pwned Passwords', color: '#6daa45', limit: Infinity, plan: 'No-Auth', planKey: 'noauth', limitUnit: ' (k-anonymity)', unitKey: 'kanon', pricing: 'https://haveibeenpwned.com/Passwords', noAuth: true },
-  breachdirectory: { name: 'BreachDirectory', color: '#fdab43', limit: 50, plan: 'Free (RapidAPI)', planKey: 'rapid', limitUnit: '/mese', unitKey: 'month', pricing: 'https://rapidapi.com/rohan-patra/api/breachdirectory' },
-  leakix: { name: 'LeakIX', color: '#a86fdf', limit: 20000, plan: 'Free Researcher', planKey: 'researcher', limitUnit: '/account', unitKey: 'account', pricing: 'https://leakix.net/auth/login' },
-  dehashed: { name: 'DeHashed', color: '#dd6974', limit: 5, plan: 'Paid only', planKey: 'paid', limitUnit: ' result/q', unitKey: 'query', pricing: 'https://dehashed.com/pricing', paidOnly: true }
+  intelx: { name: 'IntelX', color: '#4f98a3', limit: 50, plan: 'Free', planKey: 'free', limitUnit: '/giorno', unitKey: 'day', resetPeriod: 'day', pricing: 'https://intelx.io/product' },
+  hibp: { name: 'HIBP Pwned Passwords', color: '#6daa45', limit: Infinity, plan: 'No-Auth', planKey: 'noauth', limitUnit: ' (k-anonymity)', unitKey: 'kanon', resetPeriod: 'never', pricing: 'https://haveibeenpwned.com/Passwords', noAuth: true },
+  breachdirectory: { name: 'BreachDirectory', color: '#fdab43', limit: 50, plan: 'Free (RapidAPI)', planKey: 'rapid', limitUnit: '/mese', unitKey: 'month', resetPeriod: 'month', pricing: 'https://rapidapi.com/rohan-patra/api/breachdirectory' },
+  leakix: { name: 'LeakIX', color: '#a86fdf', limit: 20000, plan: 'Free Researcher', planKey: 'researcher', limitUnit: '/account', unitKey: 'account', resetPeriod: 'never', pricing: 'https://leakix.net/auth/login' },
+  dehashed: { name: 'DeHashed', color: '#dd6974', limit: 5, plan: 'Paid only', planKey: 'paid', limitUnit: ' result/q', unitKey: 'query', resetPeriod: 'never', pricing: 'https://dehashed.com/pricing', paidOnly: true }
 };
 
 const TYPE_TO_SERVICES = {
@@ -2192,7 +2239,13 @@ const I18N = {
     'limits.eyebrow': 'Quota Monitor',
     'limits.title.before': 'Rate Limits ',
     'limits.title.gradient': '& Quotas',
-    'limits.subtitle': 'Real-time monitoring of each connector usage. Counters reset on reload.',
+    'limits.subtitle': 'Real-time monitoring of each connector usage. Counters persist across sessions and auto-reset based on each provider period (daily / monthly / lifetime).',
+    'limits.col.resets': 'Resets',
+    'limits.reset.day': 'daily',
+    'limits.reset.month': 'monthly',
+    'limits.reset.never': 'lifetime',
+    'limits.resetBtn': 'Reset',
+    'limits.resetConfirm': 'Reset usage counter for {svc}?',
     'config.eyebrow': 'Setup',
     'config.title.before': 'API Keys ',
     'config.title.gradient': 'Configuration',
@@ -2393,7 +2446,13 @@ const I18N = {
     'limits.eyebrow': 'Quota Monitor',
     'limits.title.before': 'Rate Limits ',
     'limits.title.gradient': '& Quote',
-    'limits.subtitle': "Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori si resettano al reload.",
+    'limits.subtitle': "Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori sono persistenti e si resettano automaticamente in base al periodo di ogni provider (giornaliero / mensile / vita account).",
+    'limits.col.resets': 'Reset',
+    'limits.reset.day': 'giornaliero',
+    'limits.reset.month': 'mensile',
+    'limits.reset.never': 'vita',
+    'limits.resetBtn': 'Reset',
+    'limits.resetConfirm': 'Resettare il counter di utilizzo per {svc}?',
     'config.eyebrow': 'Setup',
     'config.title.before': 'Configurazione ',
     'config.title.gradient': 'API Keys',
@@ -2638,6 +2697,8 @@ async function persistConfig() {
       aiConsent: state.aiConsent,
       searchHistory: histSlim,
       recent: state.recent.slice(0, 10),
+      rateUsage: state.rateUsage,
+      rateResetKeys: state.rateResetKeys,
       savedAt: new Date().toISOString()
     };
     const blob = await encryptBlob(state.authSession.key, payload);
@@ -2662,6 +2723,12 @@ async function loadPersistedConfig(masterKey) {
       state.lastResults = data.searchHistory[0] || null;
     }
     if (Array.isArray(data.recent)) state.recent = data.recent;
+    if (data.rateUsage && typeof data.rateUsage === 'object') {
+      Object.assign(state.rateUsage, data.rateUsage);
+    }
+    if (data.rateResetKeys && typeof data.rateResetKeys === 'object') {
+      state.rateResetKeys = data.rateResetKeys;
+    }
     state.lastSavedAt = data.savedAt;
     return true;
   } catch (e) { return false; }
@@ -2736,7 +2803,7 @@ function validate(kw, type) {
 async function callIntelX(kw, type) {
   const key = state.apiKeys.intelx;
   if (!key) return { service: 'intelx', status: 'not-configured', data: null, error: 'API Key IntelX non configurata.' };
-  state.rateUsage.intelx++;
+  incRate("intelx");
   const base = state.intelxTier === 'paid' ? 'https://2.intelx.io' : 'https://free.intelx.io';
   try {
     const searchRes = await fetchTimeout(proxied(`${base}/intelligent/search`), {
@@ -2777,7 +2844,7 @@ async function callIntelX(kw, type) {
 }
 
 async function callHIBP(kw) {
-  state.rateUsage.hibp++;
+  incRate("hibp");
   try {
     const hash = await sha1(kw);
     const prefix = hash.slice(0, 5);
@@ -2801,7 +2868,7 @@ async function callHIBP(kw) {
 async function callBreachDirectory(kw) {
   const key = state.apiKeys.rapidapi;
   if (!key) return { service: 'breachdirectory', status: 'not-configured', error: 'RapidAPI Key non configurata.' };
-  state.rateUsage.breachdirectory++;
+  incRate("breachdirectory");
   try {
     const res = await fetchTimeout(proxied(`https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(kw)}`), {
       headers: {
@@ -2821,7 +2888,7 @@ async function callBreachDirectory(kw) {
 async function callLeakIX(kw, type) {
   const key = state.apiKeys.leakix;
   if (!key) return { service: 'leakix', status: 'not-configured', error: 'LeakIX API Key non configurata.' };
-  state.rateUsage.leakix++;
+  incRate("leakix");
   try {
     let url;
     if (type === 'ip' || type === 'domain') {
@@ -2846,7 +2913,7 @@ async function callDeHashed(kw) {
   const email = state.apiKeys.dehashedEmail;
   const key = state.apiKeys.dehashed;
   if (!email || !key) return { service: 'dehashed', status: 'not-configured', error: 'Email + API Key DeHashed non configurate.' };
-  state.rateUsage.dehashed++;
+  incRate("dehashed");
   try {
     const auth = btoa(`${email}:${key}`);
     const res = await fetchTimeout(proxied(`https://api.dehashed.com/search?query=${encodeURIComponent(kw)}`), {
@@ -3478,8 +3545,10 @@ function renderLimits() {
     <th>${t('limits.col.limit')}</th>
     <th>${t('limits.col.used')}</th>
     <th>${t('limits.col.remaining')}</th>
+    <th>${t('limits.col.resets')}</th>
     <th>${t('limits.col.status')}</th>
     <th>${t('limits.col.pricing')}</th>
+    <th></th>
   </tr>`;
   tbody.innerHTML = '';
   Object.entries(SERVICES).forEach(([id, svc]) => {
@@ -3498,24 +3567,41 @@ function renderLimits() {
 
     const kpi = document.createElement('div');
     kpi.className = 'kpi';
+    const resetTag = svc.resetPeriod !== 'never' ? `<span class="kpi-reset-tag">${t('limits.reset.' + svc.resetPeriod)}</span>` : '';
     kpi.innerHTML = `
       <div class="label" style="display:flex;align-items:center;gap:6px;"><span class="svc-dot" style="background:${svc.color}"></span>${svc.name}</div>
       <div class="value" data-target="${used}">0</div>
-      <div class="delta">${t('limits.over')} ${limitTxt}${unitLabel}</div>
+      <div class="delta">${t('limits.over')} ${limitTxt}${unitLabel} ${resetTag}</div>
     `;
     grid.appendChild(kpi);
 
+    const resetLabel = t('limits.reset.' + (svc.resetPeriod || 'never'));
+    const lastResetTxt = state.rateResetKeys[id]
+      ? `<div class="muted mono" style="font-size:0.68rem;margin-top:2px;">${state.rateResetKeys[id]}</div>`
+      : '';
+    const canReset = svc.resetPeriod === 'never' || used > 0;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${svc.name}</strong></td>
       <td>${planLabel}</td>
       <td>${limitTxt}${unitLabel}</td>
-      <td>${used}</td>
+      <td><strong style="color:${pct >= 80 && limit !== Infinity ? 'var(--warning)' : 'var(--text-1)'};">${used}</strong></td>
       <td>${remaining}</td>
+      <td><span class="muted mono" style="font-size:0.74rem;">${resetLabel}</span>${lastResetTxt}</td>
       <td>${stato}</td>
       <td><a href="${svc.pricing}" target="_blank" rel="noopener">Pricing →</a></td>
+      <td>${canReset ? `<button class="btn btn-ghost btn-sm" data-reset-svc="${id}" title="${t('limits.resetBtn')}"><i data-lucide="rotate-ccw"></i></button>` : ''}</td>
     `;
     tbody.appendChild(tr);
+  });
+  // Wire reset buttons
+  $$('button[data-reset-svc]').forEach(b => b.onclick = () => {
+    const svc = b.dataset.resetSvc;
+    if (!confirm(t('limits.resetConfirm').replace('{svc}', SERVICES[svc].name))) return;
+    state.rateUsage[svc] = 0;
+    if (SERVICES[svc].resetPeriod !== 'never') state.rateResetKeys[svc] = periodKey(SERVICES[svc].resetPeriod);
+    schedulePersist();
+    renderLimits();
   });
 
   // Animate counters
@@ -3778,6 +3864,8 @@ async function login() {
   }
   $('#loginModal').classList.remove('open');
   $('#app').classList.add('authed');
+  // Reset counters il cui period (day/month) è cambiato dall'ultima sessione
+  if (maybeResetCounters()) schedulePersist();
   renderRecent();
   const initial = location.hash.slice(1) || 'search';
   setRoute(initial);
