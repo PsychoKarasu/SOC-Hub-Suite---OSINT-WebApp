@@ -826,6 +826,228 @@ input, select, textarea { font-family: inherit; }
 .stat-trend.up { color: var(--success); }
 .stat-trend.warn { color: var(--warning); }
 
+/* ========== AVATAR RAIL (right side, fixed) ========== */
+.avatar-rail {
+  position: fixed;
+  right: 0; top: 0;
+  width: clamp(280px, 22vw, 380px);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+  padding: 20px 12px;
+}
+/* Hide on narrow screens — content area gets full width */
+@media (max-width: 1599px) { .avatar-rail { display: none; } }
+.main { transition: padding-right 0.3s; }
+@media (min-width: 1600px) { .main { padding-right: clamp(280px, 22vw, 380px); } }
+
+.avatar-stage {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.avatar-bubble {
+  position: relative;
+  width: 92%;
+  max-width: 320px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-1) 95%, var(--accent)) 0%, var(--bg-1) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(94,234,212,0.08) inset;
+  animation: bubbleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: none; }
+}
+.avatar-bubble::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 16px;
+  padding: 1.5px;
+  background: var(--gradient);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.4;
+  pointer-events: none;
+}
+.avatar-bubble-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.avatar-bubble-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  background: var(--bg-2);
+  border-radius: 4px;
+  color: var(--text-3);
+  font-weight: 500;
+  text-transform: lowercase;
+  letter-spacing: 0;
+}
+.avatar-bubble-msg {
+  font-size: 0.86rem;
+  color: var(--text-1);
+  line-height: 1.45;
+}
+.avatar-bubble-arrow {
+  position: absolute;
+  bottom: -7px; left: 50%; transform: translateX(-50%) rotate(45deg);
+  width: 12px; height: 12px;
+  background: var(--bg-1);
+  border-right: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.avatar-frame {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 360 / 460;
+}
+.avatar-glow {
+  position: absolute;
+  inset: -10% -15% -25% -15%;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 60%);
+  filter: blur(20px);
+  z-index: 0;
+}
+.avatar-floor {
+  position: absolute;
+  bottom: 4%; left: 12%; right: 12%;
+  height: 14px;
+  background: radial-gradient(ellipse at center, rgba(94,234,212,0.35) 0%, transparent 70%);
+  filter: blur(8px);
+  z-index: 0;
+  animation: floorBreathe 4s ease-in-out infinite;
+}
+@keyframes floorBreathe {
+  0%, 100% { opacity: 0.6; transform: scaleX(1); }
+  50% { opacity: 1; transform: scaleX(1.05); }
+}
+.avatar-svg {
+  position: relative;
+  width: 100%; height: 100%;
+  z-index: 1;
+  display: block;
+}
+
+/* Body breathing */
+.av-body { animation: avBreathe 4s ease-in-out infinite; transform-origin: 180px 280px; }
+@keyframes avBreathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Eye blink baseline */
+.av-eyelids { animation: avBlink 5s infinite; }
+@keyframes avBlink {
+  0%, 92%, 96%, 100% { opacity: 0; }
+  93%, 95% { opacity: 1; }
+}
+.av-lens-flash { animation: avLensFlash 4.5s ease-in-out infinite; }
+@keyframes avLensFlash {
+  0%, 100% { opacity: 0.06; }
+  50% { opacity: 0.32; }
+}
+.av-iris { transition: cx 0.3s, cy 0.3s; }
+
+.av-caret { animation: avCaret 0.7s steps(2) infinite; }
+@keyframes avCaret { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+/* ====== STATE-BASED VARIATIONS ====== */
+/* IDLE (default): mouth-idle visible, arms-idle, no laptop */
+
+/* SEARCHING: laptop appears, arms-search, mouth-focus, body leans forward */
+.avatar-stage[data-state="searching"] .av-mouth-idle { opacity: 0; }
+.avatar-stage[data-state="searching"] .av-mouth-focus { opacity: 1; }
+.avatar-stage[data-state="searching"] .av-arms-idle { opacity: 0; }
+.avatar-stage[data-state="searching"] .av-arms-search { opacity: 1; }
+.avatar-stage[data-state="searching"] .av-laptop { opacity: 1; animation: avLaptopIn 0.4s ease; }
+.avatar-stage[data-state="searching"] .av-body { animation: avLeanForward 1.4s ease-in-out infinite; }
+.avatar-stage[data-state="searching"] .av-brow-l { transform: translateY(-2px); }
+.avatar-stage[data-state="searching"] .av-brow-r { transform: translateY(-2px); }
+.avatar-stage[data-state="searching"] .av-code { animation: avCodeFlicker 0.6s steps(3) infinite; }
+@keyframes avLeanForward {
+  0%, 100% { transform: translateY(2px) rotate(-1deg); }
+  50% { transform: translateY(0) rotate(1deg); }
+}
+@keyframes avCodeFlicker {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.95; }
+}
+@keyframes avLaptopIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* SUCCESS: smiling, pointing left toward results, no laptop */
+.avatar-stage[data-state="success"] .av-mouth-idle { opacity: 0; }
+.avatar-stage[data-state="success"] .av-mouth-smile { opacity: 1; }
+.avatar-stage[data-state="success"] .av-arms-idle { opacity: 0; }
+.avatar-stage[data-state="success"] .av-arms-point { opacity: 1; }
+.avatar-stage[data-state="success"] .av-body { animation: avBob 1.5s ease-in-out infinite; }
+.avatar-stage[data-state="success"] .av-iris { transform: translateX(-4px); }
+@keyframes avBob {
+  0%, 100% { transform: translateY(-2px); }
+  50% { transform: translateY(2px); }
+}
+
+/* TALKING: idle pose but mouth oscillates between talk and idle */
+.avatar-stage[data-state="talking"] .av-mouth-idle { animation: avTalkIdle 0.4s steps(2) infinite; }
+.avatar-stage[data-state="talking"] .av-mouth-talk { animation: avTalk 0.4s steps(2) infinite; }
+@keyframes avTalkIdle { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+@keyframes avTalk { 0%, 50% { opacity: 0; } 51%, 100% { opacity: 1; } }
+
+/* ERROR: sad mouth, tears, eyebrows down, body slumped */
+.avatar-stage[data-state="error"] .av-mouth-idle { opacity: 0; }
+.avatar-stage[data-state="error"] .av-mouth-sad { opacity: 1; }
+.avatar-stage[data-state="error"] .av-tears { opacity: 1; animation: avTearDrop 1.6s ease-in-out infinite; }
+.avatar-stage[data-state="error"] .av-brows .av-brow-l { transform: rotate(-12deg) translate(-2px, 2px); transform-origin: 159px 128px; }
+.avatar-stage[data-state="error"] .av-brows .av-brow-r { transform: rotate(12deg) translate(2px, 2px); transform-origin: 201px 128px; }
+.avatar-stage[data-state="error"] .av-body { animation: avSlump 3s ease-in-out infinite; transform-origin: center 380px; }
+.avatar-stage[data-state="error"] .av-bubble { border-color: var(--danger); }
+.avatar-stage[data-state="error"] .avatar-bubble { border-color: color-mix(in srgb, var(--danger) 50%, var(--border)); }
+.avatar-stage[data-state="error"] .avatar-bubble::before { background: linear-gradient(135deg, var(--danger), var(--warning)); }
+.avatar-stage[data-state="error"] .avatar-bubble-name { color: var(--danger); }
+@keyframes avTearDrop {
+  0% { opacity: 0; transform: translateY(-4px); }
+  20%, 80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(8px); }
+}
+@keyframes avSlump {
+  0%, 100% { transform: translateY(2px) scale(0.99); }
+  50% { transform: translateY(4px) scale(0.985); }
+}
+
+/* WAVE on initial mount */
+.avatar-stage[data-state="hello"] .av-mouth-idle { opacity: 0; }
+.avatar-stage[data-state="hello"] .av-mouth-smile { opacity: 1; }
+.avatar-stage[data-state="hello"] .av-body { animation: avWave 1.6s ease-in-out 1; }
+@keyframes avWave {
+  0% { transform: translateY(0) rotate(0); }
+  25% { transform: translateY(-4px) rotate(-3deg); }
+  50% { transform: translateY(0) rotate(3deg); }
+  75% { transform: translateY(-2px) rotate(-2deg); }
+  100% { transform: translateY(0); }
+}
+
 /* Hero art (anime cyber investigator) */
 .hero-art {
   position: relative;
@@ -1137,12 +1359,160 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v1.8</span>
+        <span>v1.9</span>
         <span class="version-sep">·</span>
-        <span>i18n + secured</span>
+        <span>NOVA</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========== INTEL AVATAR (fisso a destra, reattivo allo stato dell'app) ========== -->
+  <aside class="avatar-rail" id="avatarRail" aria-hidden="true">
+    <div class="avatar-stage" data-state="idle" id="avatarStage">
+      <div class="avatar-bubble" id="avatarBubble">
+        <div class="avatar-bubble-inner">
+          <div class="avatar-bubble-name">NOVA <span class="avatar-bubble-tag">analyst</span></div>
+          <div class="avatar-bubble-msg" id="avatarBubbleMsg">Ready when you are. Run a query to begin.</div>
+        </div>
+        <span class="avatar-bubble-arrow"></span>
+      </div>
+      <div class="avatar-frame">
+        <div class="avatar-glow"></div>
+        <div class="avatar-floor"></div>
+        <svg class="avatar-svg" viewBox="0 0 360 460" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="avHair" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#22d3c8"/><stop offset="50%" stop-color="#5eead4"/><stop offset="100%" stop-color="#818cf8"/>
+            </linearGradient>
+            <linearGradient id="avHairLight" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#a7f3d0" stop-opacity="0.9"/><stop offset="100%" stop-color="#a7f3d0" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="avSkin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fbe2c7"/><stop offset="100%" stop-color="#e8c5a3"/>
+            </linearGradient>
+            <linearGradient id="avSkinShade" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.25"/>
+            </linearGradient>
+            <linearGradient id="avHoodie" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1f2937"/><stop offset="100%" stop-color="#0a0e15"/>
+            </linearGradient>
+            <linearGradient id="avHoodieAccent" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#5eead4"/><stop offset="100%" stop-color="#818cf8"/>
+            </linearGradient>
+            <linearGradient id="avLaptop" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2d3748"/><stop offset="100%" stop-color="#1a202c"/>
+            </linearGradient>
+            <linearGradient id="avScreen" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#5eead4"/><stop offset="100%" stop-color="#818cf8"/>
+            </linearGradient>
+            <radialGradient id="avBlush" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="#f472b6" stop-opacity="0.45"/><stop offset="100%" stop-color="#f472b6" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="avSoftShadow"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/><feOffset dx="0" dy="4" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <g class="av-body">
+            <path d="M 95 280 Q 75 230 100 195 L 130 175 Q 180 165 230 175 L 260 195 Q 285 230 265 280 L 260 380 Q 180 405 100 380 Z" fill="url(#avHoodie)" filter="url(#avSoftShadow)"/>
+            <path d="M 110 235 Q 130 215 145 215 L 215 215 Q 230 215 250 235 L 250 280 L 110 280 Z" fill="#000" opacity="0.35"/>
+            <line x1="180" y1="220" x2="180" y2="380" stroke="#5eead4" stroke-width="1.2" opacity="0.55"/>
+            <path d="M 130 265 L 230 265 L 226 272 L 134 272 Z" fill="url(#avHoodieAccent)" opacity="0.55"/>
+            <line class="av-string" x1="155" y1="195" x2="155" y2="245" stroke="#5eead4" stroke-width="1.4" opacity="0.85"/>
+            <line class="av-string" x1="205" y1="195" x2="205" y2="245" stroke="#5eead4" stroke-width="1.4" opacity="0.85"/>
+            <circle cx="155" cy="248" r="3" fill="#5eead4"/><circle cx="205" cy="248" r="3" fill="#5eead4"/>
+            <path d="M 100 195 Q 90 130 140 105 Q 180 92 220 105 Q 270 130 260 195 L 230 175 Q 180 165 130 175 Z" fill="url(#avHoodie)"/>
+            <path d="M 105 220 Q 95 290 115 360 L 130 360 Q 122 290 130 235 Z" fill="url(#avHair)" opacity="0.75"/>
+            <path d="M 255 220 Q 265 290 245 360 L 230 360 Q 238 290 230 235 Z" fill="url(#avHair)" opacity="0.75"/>
+            <rect x="165" y="160" width="30" height="30" rx="6" fill="url(#avSkin)"/>
+            <rect x="165" y="160" width="30" height="20" rx="4" fill="#000" opacity="0.18"/>
+            <ellipse class="av-head" cx="180" cy="125" rx="55" ry="62" fill="url(#avSkin)" filter="url(#avSoftShadow)"/>
+            <ellipse cx="200" cy="125" rx="35" ry="55" fill="url(#avSkinShade)" opacity="0.5"/>
+            <path d="M 158 165 Q 180 185 202 165 L 200 175 Q 180 190 160 175 Z" fill="#000" opacity="0.08"/>
+            <path d="M 120 110 Q 180 78 240 110 L 240 132 Q 215 118 180 118 Q 145 118 120 132 Z" fill="url(#avHoodie)"/>
+            <path d="M 120 110 Q 180 78 240 110" fill="none" stroke="#5eead4" stroke-width="1.2" opacity="0.6"/>
+            <path d="M 128 130 Q 145 110 165 122 Q 180 108 195 122 Q 215 110 232 130 Q 224 152 200 142 Q 180 132 160 142 Q 136 152 128 130 Z" fill="url(#avHair)"/>
+            <path d="M 132 132 Q 158 116 170 130 L 168 142 Q 150 128 132 132 Z" fill="url(#avHairLight)" opacity="0.5"/>
+            <path d="M 122 155 Q 115 175 122 200 L 132 200 Q 128 175 132 155 Z" fill="url(#avHair)"/>
+            <path d="M 238 155 Q 245 175 238 200 L 228 200 Q 232 175 228 155 Z" fill="url(#avHair)"/>
+
+            <g class="av-eyes">
+              <ellipse class="av-eye-white" cx="159" cy="140" rx="9" ry="10" fill="#fff"/>
+              <ellipse class="av-iris" cx="159" cy="142" rx="6.5" ry="7.5" fill="#5eead4"/>
+              <ellipse cx="159" cy="146" rx="5" ry="5" fill="#0a0e15"/>
+              <circle cx="161" cy="138" r="2" fill="#fff"/>
+              <circle cx="156" cy="148" r="1" fill="#fff" opacity="0.85"/>
+              <ellipse class="av-eye-white" cx="201" cy="140" rx="9" ry="10" fill="#fff"/>
+              <ellipse class="av-iris" cx="201" cy="142" rx="6.5" ry="7.5" fill="#5eead4"/>
+              <ellipse cx="201" cy="146" rx="5" ry="5" fill="#0a0e15"/>
+              <circle cx="203" cy="138" r="2" fill="#fff"/>
+              <circle cx="198" cy="148" r="1" fill="#fff" opacity="0.85"/>
+            </g>
+            <g class="av-eyelids" opacity="0">
+              <path d="M 150 140 Q 159 145 168 140" fill="none" stroke="#1f2937" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M 192 140 Q 201 145 210 140" fill="none" stroke="#1f2937" stroke-width="1.6" stroke-linecap="round"/>
+            </g>
+            <g class="av-brows">
+              <path class="av-brow-l" d="M 148 128 Q 159 122 170 128" fill="none" stroke="#22d3c8" stroke-width="2.5" stroke-linecap="round"/>
+              <path class="av-brow-r" d="M 190 128 Q 201 122 212 128" fill="none" stroke="#22d3c8" stroke-width="2.5" stroke-linecap="round"/>
+            </g>
+            <g class="av-glasses">
+              <rect x="146" y="132" width="26" height="20" rx="6" fill="rgba(94,234,212,0.06)" stroke="#5eead4" stroke-width="2"/>
+              <rect x="188" y="132" width="26" height="20" rx="6" fill="rgba(94,234,212,0.06)" stroke="#5eead4" stroke-width="2"/>
+              <line x1="172" y1="142" x2="188" y2="142" stroke="#5eead4" stroke-width="2"/>
+              <rect class="av-lens-flash" x="146" y="132" width="26" height="20" rx="6" fill="#5eead4" opacity="0.18"/>
+              <rect class="av-lens-flash" x="188" y="132" width="26" height="20" rx="6" fill="#5eead4" opacity="0.18" style="animation-delay:0.3s"/>
+            </g>
+            <ellipse cx="148" cy="160" rx="9" ry="5" fill="url(#avBlush)"/>
+            <ellipse cx="212" cy="160" rx="9" ry="5" fill="url(#avBlush)"/>
+
+            <path class="av-mouth av-mouth-idle" d="M 173 170 Q 180 173 187 170" fill="none" stroke="#9c4f5c" stroke-width="1.8" stroke-linecap="round"/>
+            <path class="av-mouth av-mouth-smile" d="M 168 168 Q 180 180 192 168" fill="#9c4f5c" stroke="#7c3a47" stroke-width="1" opacity="0"/>
+            <path class="av-mouth av-mouth-talk" d="M 172 170 L 188 170 L 188 178 L 172 178 Z" fill="#5e2c39" opacity="0"/>
+            <path class="av-mouth av-mouth-sad" d="M 168 178 Q 180 168 192 178" fill="none" stroke="#9c4f5c" stroke-width="2" stroke-linecap="round" opacity="0"/>
+            <path class="av-mouth av-mouth-focus" d="M 174 172 L 186 172" fill="none" stroke="#9c4f5c" stroke-width="2" stroke-linecap="round" opacity="0"/>
+
+            <g class="av-tears" opacity="0">
+              <path d="M 159 152 Q 156 165 162 175 Q 167 165 161 152" fill="#60a5fa" opacity="0.85"/>
+              <path d="M 201 152 Q 198 165 204 175 Q 209 165 203 152" fill="#60a5fa" opacity="0.85"/>
+            </g>
+
+            <g class="av-arms av-arms-idle">
+              <path d="M 95 270 Q 70 320 85 380" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
+              <path d="M 265 270 Q 290 320 275 380" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
+              <ellipse cx="85" cy="385" rx="11" ry="9" fill="url(#avSkin)"/>
+              <ellipse cx="275" cy="385" rx="11" ry="9" fill="url(#avSkin)"/>
+            </g>
+            <g class="av-arms av-arms-search" opacity="0">
+              <path d="M 95 270 Q 105 305 140 320" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
+              <path d="M 265 270 Q 255 305 220 320" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
+              <ellipse cx="140" cy="320" rx="11" ry="9" fill="url(#avSkin)"/>
+              <ellipse cx="220" cy="320" rx="11" ry="9" fill="url(#avSkin)"/>
+            </g>
+            <g class="av-arms av-arms-point" opacity="0">
+              <path d="M 95 270 Q 60 285 35 270" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
+              <path d="M 265 270 Q 290 320 275 380" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
+              <ellipse cx="35" cy="270" rx="11" ry="9" fill="url(#avSkin)"/>
+              <line x1="35" y1="270" x2="20" y2="262" stroke="#fbe2c7" stroke-width="6" stroke-linecap="round"/>
+              <ellipse cx="275" cy="385" rx="11" ry="9" fill="url(#avSkin)"/>
+            </g>
+
+            <g class="av-laptop" opacity="0">
+              <path d="M 105 340 L 95 360 L 265 360 L 255 340 Z" fill="url(#avLaptop)"/>
+              <rect x="110" y="290" width="140" height="55" rx="3" fill="url(#avLaptop)"/>
+              <rect x="115" y="294" width="130" height="47" rx="2" fill="url(#avScreen)" opacity="0.25"/>
+              <line class="av-code" x1="120" y1="302" x2="160" y2="302" stroke="#5eead4" stroke-width="1.4" opacity="0.95"/>
+              <line class="av-code" x1="120" y1="308" x2="180" y2="308" stroke="#aab5c2" stroke-width="1" opacity="0.7"/>
+              <line class="av-code" x1="120" y1="314" x2="150" y2="314" stroke="#aab5c2" stroke-width="1" opacity="0.6"/>
+              <line class="av-code" x1="120" y1="320" x2="170" y2="320" stroke="#5eead4" stroke-width="1" opacity="0.8"/>
+              <line class="av-code" x1="120" y1="326" x2="155" y2="326" stroke="#34d399" stroke-width="1" opacity="0.85"/>
+              <line class="av-code" x1="120" y1="332" x2="145" y2="332" stroke="#aab5c2" stroke-width="1" opacity="0.5"/>
+              <rect class="av-caret" x="148" y="328" width="2" height="6" fill="#5eead4"/>
+              <rect x="200" y="298" width="42" height="14" rx="3" fill="#5eead4" opacity="0.3"/>
+              <text x="221" y="308" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="6" fill="#5eead4" font-weight="700">SCAN</text>
+            </g>
+          </g>
+        </svg>
       </div>
     </div>
   </aside>
@@ -1210,164 +1580,26 @@ input, select, textarea { font-family: inherit; }
                 </div>
               </div>
             </div>
-            <div class="hero-art">
-              <!-- Anime cyber-investigator scene -->
-              <svg class="anime-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+            <div class="radar-widget">
+              <svg class="radar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                  <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#5eead4"/>
-                    <stop offset="100%" stop-color="#818cf8"/>
-                  </linearGradient>
-                  <linearGradient id="hoodieGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#1a212d"/>
-                    <stop offset="100%" stop-color="#0a0e15"/>
-                  </linearGradient>
-                  <linearGradient id="screenGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#5eead4" stop-opacity="0.95"/>
-                    <stop offset="100%" stop-color="#818cf8" stop-opacity="0.95"/>
-                  </linearGradient>
-                  <radialGradient id="glowGrad">
-                    <stop offset="0%" stop-color="#5eead4" stop-opacity="0.5"/>
-                    <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
-                  </radialGradient>
                   <radialGradient id="sweepGrad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stop-color="#5eead4" stop-opacity="0.4"/>
-                    <stop offset="100%" stop-color="#5eead4" stop-opacity="0"/>
+                    <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
                   </radialGradient>
-                  <filter id="softGlow">
-                    <feGaussianBlur stdDeviation="2"/>
-                    <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
                 </defs>
-
-                <!-- Background ambient glow behind character -->
-                <ellipse cx="160" cy="180" rx="130" ry="100" fill="url(#glowGrad)"/>
-
-                <!-- Floating cyber elements (back layer) -->
-                <g class="float-slow" opacity="0.7">
-                  <rect x="30" y="30" width="60" height="42" rx="5" fill="#11161f" stroke="#5eead4" stroke-width="0.8" opacity="0.85"/>
-                  <circle cx="36" cy="36" r="1.5" fill="#f87171"/>
-                  <circle cx="42" cy="36" r="1.5" fill="#fbbf24"/>
-                  <circle cx="48" cy="36" r="1.5" fill="#34d399"/>
-                  <text x="36" y="48" font-family="JetBrains Mono, monospace" font-size="4" fill="#5eead4">$ scan --target</text>
-                  <text x="36" y="55" font-family="JetBrains Mono, monospace" font-size="4" fill="#aab5c2">.io intel-x</text>
-                  <text x="36" y="62" font-family="JetBrains Mono, monospace" font-size="4" fill="#34d399">[OK] 10 hits</text>
-                  <text x="36" y="68" font-family="JetBrains Mono, monospace" font-size="4" fill="#aab5c2" opacity="0.6">_</text>
-                </g>
-
-                <g class="float-mid" opacity="0.85">
-                  <!-- Lock badge top right -->
-                  <circle cx="265" cy="60" r="22" fill="#11161f" stroke="#818cf8" stroke-width="0.8"/>
-                  <rect x="258" y="56" width="14" height="11" rx="2" fill="none" stroke="#818cf8" stroke-width="1.4"/>
-                  <path d="M 261 56 L 261 51 A 4 4 0 0 1 269 51 L 269 56" fill="none" stroke="#818cf8" stroke-width="1.4"/>
-                  <circle cx="265" cy="61.5" r="1.5" fill="#818cf8"/>
-                </g>
-
-                <g class="float-fast" opacity="0.6">
-                  <!-- Hash chip middle right -->
-                  <rect x="240" y="115" width="58" height="18" rx="9" fill="#11161f" stroke="#f472b6" stroke-width="0.6"/>
-                  <text x="246" y="127" font-family="JetBrains Mono, monospace" font-size="6" fill="#f472b6" font-weight="600">#a3f1...e9b</text>
-                </g>
-
-                <g class="float-slow" opacity="0.7">
-                  <!-- Magnifier bottom right -->
-                  <circle cx="280" cy="240" r="14" fill="none" stroke="#5eead4" stroke-width="1.4"/>
-                  <line x1="290" y1="250" x2="296" y2="256" stroke="#5eead4" stroke-width="1.8" stroke-linecap="round"/>
-                  <circle cx="280" cy="240" r="9" fill="none" stroke="#5eead4" stroke-width="0.6" opacity="0.5"/>
-                </g>
-
-                <g class="float-mid" opacity="0.6">
-                  <!-- Mini radar bottom left -->
-                  <circle cx="40" cy="240" r="22" fill="none" stroke="#5eead4" stroke-width="0.6"/>
-                  <circle cx="40" cy="240" r="14" fill="none" stroke="#5eead4" stroke-width="0.4" opacity="0.6"/>
-                  <circle cx="40" cy="240" r="6" fill="none" stroke="#5eead4" stroke-width="0.4" opacity="0.4"/>
-                  <line x1="40" y1="218" x2="40" y2="262" stroke="#5eead4" stroke-width="0.3" stroke-dasharray="1 2"/>
-                  <line x1="18" y1="240" x2="62" y2="240" stroke="#5eead4" stroke-width="0.3" stroke-dasharray="1 2"/>
-                  <path class="mini-sweep" d="M 40 240 L 40 218 A 22 22 0 0 1 62 240 Z" fill="url(#sweepGrad)"/>
-                  <circle cx="40" cy="240" r="2" fill="#5eead4"/>
-                </g>
-
-                <!-- CHARACTER -->
-                <g transform="translate(160 175)">
-                  <!-- Hoodie body -->
-                  <path d="M -65 60 Q -75 0 -55 -30 L -30 -45 Q 0 -55 30 -45 L 55 -30 Q 75 0 65 60 Z" fill="url(#hoodieGrad)" stroke="#5eead4" stroke-width="0.6" stroke-opacity="0.5"/>
-                  <!-- Hoodie inner shadow -->
-                  <path d="M -55 -30 Q -45 -10 -42 5 L -36 10 L 36 10 L 42 5 Q 45 -10 55 -30 Z" fill="#000" opacity="0.45"/>
-                  <!-- Hoodie strings -->
-                  <line x1="-15" y1="-15" x2="-15" y2="20" stroke="#5eead4" stroke-width="0.8" opacity="0.7"/>
-                  <line x1="15" y1="-15" x2="15" y2="20" stroke="#5eead4" stroke-width="0.8" opacity="0.7"/>
-                  <circle cx="-15" cy="22" r="2" fill="#5eead4"/>
-                  <circle cx="15" cy="22" r="2" fill="#5eead4"/>
-
-                  <!-- Hair side fringes (pinkish-teal) peeking out of hood -->
-                  <path d="M -42 -38 Q -50 -25 -45 -10 L -38 -8 Q -38 -25 -34 -38 Z" fill="url(#hairGrad)"/>
-                  <path d="M 42 -38 Q 50 -25 45 -10 L 38 -8 Q 38 -25 34 -38 Z" fill="url(#hairGrad)"/>
-
-                  <!-- Face -->
-                  <ellipse cx="0" cy="-30" rx="26" ry="30" fill="#f5d4b3"/>
-                  <!-- Hood shadow over forehead -->
-                  <path d="M -26 -45 Q 0 -65 26 -45 L 26 -32 Q 0 -42 -26 -32 Z" fill="#000" opacity="0.35"/>
-
-                  <!-- Hair bangs -->
-                  <path d="M -22 -42 Q -10 -50 0 -42 Q 10 -52 22 -42 Q 18 -32 8 -34 Q 0 -40 -8 -34 Q -18 -32 -22 -42 Z" fill="url(#hairGrad)"/>
-
-                  <!-- Glasses -->
-                  <g class="glasses">
-                    <rect x="-19" y="-30" width="14" height="10" rx="3" fill="none" stroke="#5eead4" stroke-width="1.4"/>
-                    <rect x="5" y="-30" width="14" height="10" rx="3" fill="none" stroke="#5eead4" stroke-width="1.4"/>
-                    <line x1="-5" y1="-25" x2="5" y2="-25" stroke="#5eead4" stroke-width="1.4"/>
-                    <!-- Lens reflection (animated) -->
-                    <rect class="lens-flash" x="-19" y="-30" width="14" height="10" rx="3" fill="#5eead4" opacity="0.3"/>
-                    <rect class="lens-flash" x="5" y="-30" width="14" height="10" rx="3" fill="#5eead4" opacity="0.3" style="animation-delay:0.4s"/>
-                  </g>
-
-                  <!-- Mouth (small focused expression) -->
-                  <path d="M -4 -10 Q 0 -7 4 -10" fill="none" stroke="#9c6a4a" stroke-width="1.2" stroke-linecap="round"/>
-
-                  <!-- Hood opening highlight -->
-                  <path d="M -26 -45 Q 0 -65 26 -45" fill="none" stroke="#5eead4" stroke-width="0.6" opacity="0.7"/>
-
-                  <!-- Arms / hands on laptop -->
-                  <path d="M -55 35 Q -50 50 -38 55 L -28 50 Q -36 38 -42 35 Z" fill="url(#hoodieGrad)" stroke="#5eead4" stroke-width="0.4" stroke-opacity="0.4"/>
-                  <path d="M 55 35 Q 50 50 38 55 L 28 50 Q 36 38 42 35 Z" fill="url(#hoodieGrad)" stroke="#5eead4" stroke-width="0.4" stroke-opacity="0.4"/>
-
-                  <!-- Hand tone -->
-                  <ellipse cx="-32" cy="52" rx="6" ry="4" fill="#f5d4b3"/>
-                  <ellipse cx="32" cy="52" rx="6" ry="4" fill="#f5d4b3"/>
-
-                  <!-- Laptop -->
-                  <g transform="translate(0 60)">
-                    <!-- Base -->
-                    <path d="M -54 12 L -50 20 L 50 20 L 54 12 Z" fill="#1a212d" stroke="#2f3a4a" stroke-width="0.6"/>
-                    <!-- Screen back -->
-                    <rect x="-50" y="-22" width="100" height="34" rx="2" fill="#0a0e15" stroke="#2f3a4a" stroke-width="0.6"/>
-                    <!-- Screen content (gradient + code) -->
-                    <rect x="-47" y="-19" width="94" height="28" rx="1" fill="url(#screenGrad)" opacity="0.18"/>
-                    <line x1="-44" y1="-15" x2="-22" y2="-15" stroke="#5eead4" stroke-width="0.8" opacity="0.9"/>
-                    <line x1="-44" y1="-11" x2="-12" y2="-11" stroke="#aab5c2" stroke-width="0.6" opacity="0.7"/>
-                    <line x1="-44" y1="-7" x2="-32" y2="-7" stroke="#aab5c2" stroke-width="0.6" opacity="0.5"/>
-                    <line x1="-44" y1="-3" x2="-18" y2="-3" stroke="#5eead4" stroke-width="0.6" opacity="0.7"/>
-                    <line x1="-44" y1="1" x2="-26" y2="1" stroke="#aab5c2" stroke-width="0.6" opacity="0.5"/>
-                    <line x1="-44" y1="5" x2="-15" y2="5" stroke="#34d399" stroke-width="0.6" opacity="0.8"/>
-                    <!-- Right side: small pulsing chart -->
-                    <rect x="20" y="-10" width="22" height="2" fill="#5eead4" opacity="0.7"/>
-                    <rect x="20" y="-6" width="14" height="2" fill="#5eead4" opacity="0.5"/>
-                    <rect x="20" y="-2" width="18" height="2" fill="#f472b6" opacity="0.6"/>
-                    <rect x="20" y="2" width="10" height="2" fill="#5eead4" opacity="0.4"/>
-                    <!-- Cursor -->
-                    <rect class="caret" x="-18" y="3" width="2" height="4" fill="#5eead4"/>
-                    <!-- Apple/Dot logo on lid back -->
-                    <circle cx="0" cy="-5" r="1.5" fill="#5eead4" opacity="0.3"/>
-                  </g>
-                </g>
-
-                <!-- Floating data particles -->
-                <g class="particles">
-                  <circle cx="100" cy="100" r="1.5" fill="#5eead4" opacity="0.6"><animate attributeName="cy" values="100;90;100" dur="4s" repeatCount="indefinite"/></circle>
-                  <circle cx="220" cy="150" r="1.5" fill="#f472b6" opacity="0.6"><animate attributeName="cy" values="150;140;150" dur="5s" repeatCount="indefinite"/></circle>
-                  <circle cx="80" cy="180" r="1.5" fill="#818cf8" opacity="0.6"><animate attributeName="cx" values="80;70;80" dur="6s" repeatCount="indefinite"/></circle>
-                  <circle cx="240" cy="200" r="1.5" fill="#5eead4" opacity="0.6"><animate attributeName="cy" values="200;210;200" dur="3.5s" repeatCount="indefinite"/></circle>
-                </g>
+                <circle class="radar-ring" cx="100" cy="100" r="92"/>
+                <circle class="radar-ring" cx="100" cy="100" r="68" style="opacity:0.7"/>
+                <circle class="radar-ring" cx="100" cy="100" r="44" style="opacity:0.5"/>
+                <circle class="radar-ring" cx="100" cy="100" r="20" style="opacity:0.3"/>
+                <line class="radar-cross" x1="100" y1="8" x2="100" y2="192"/>
+                <line class="radar-cross" x1="8" y1="100" x2="192" y2="100"/>
+                <path class="radar-sweep" d="M 100 100 L 100 8 A 92 92 0 0 1 192 100 Z"/>
+                <circle class="radar-blip" cx="135" cy="65" r="3" style="animation-delay: 0s;"/>
+                <circle class="radar-blip" cx="60" cy="130" r="3" style="animation-delay: 0.8s;"/>
+                <circle class="radar-blip" cx="155" cy="120" r="3" style="animation-delay: 1.6s;"/>
+                <circle class="radar-blip" cx="80" cy="55" r="3" style="animation-delay: 2.4s;"/>
+                <circle cx="100" cy="100" r="3" fill="var(--accent)" style="filter: drop-shadow(0 0 6px var(--accent));"/>
               </svg>
             </div>
           </div>
@@ -1722,9 +1954,9 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
    IDENTITY INTELLIGENCE HUB — Application Logic
    ==================================================== */
 
-// SHA-256 hash della Master Key "Id3ntity@1312Int3ll1g3nc3!"
+// SHA-256 hash della Master Key "Id3nt1ty@1312Int3ll1g3nc3!"
 // Per cambiarla: calcola SHA-256 della tua chiave (es. echo -n 'tua-key' | sha256sum) e sostituisci sotto.
-const MASTER_KEY_HASH = '088d58ad29ea0ccaa6b23c51ad06013028d4798c9d8e5a263ea584ccd5a5ed2f';
+const MASTER_KEY_HASH = '87ca89c470b18dff85b38ac815ed3eeb3ff74fe4345bf2605734088feb540066';
 
 // In produzione: false. Solo se true accetta qualsiasi chiave ≥4 char (per test/demo).
 let DEMO_FALLBACK = false;
@@ -1980,6 +2212,12 @@ function setLang(lang) {
     if ($('#serviceChecks')) renderServiceChecks();
     const route = location.hash.slice(1) || 'search';
     $('#routeTitle').textContent = t('topbar.' + route);
+    // Avatar idle msg
+    const stage = document.getElementById('avatarStage');
+    if (stage && stage.dataset.state === 'idle') {
+      const msg = document.getElementById('avatarBubbleMsg');
+      if (msg) msg.textContent = avatarMsg('idle');
+    }
   }
 }
 
@@ -2319,6 +2557,50 @@ Genera il report Identity Intelligence completo.`;
   } catch (e) {
     return { error: e.message || 'Errore chiamata Claude.' };
   }
+}
+
+/* ============ Avatar (NOVA) ============ */
+const AVATAR_LINES = {
+  en: {
+    hello: "Hi! I'm NOVA, your OSINT analyst. Run a query and I'll dig in.",
+    idle: "Ready when you are. Run a query to begin.",
+    searching: "Cross-referencing leak databases. Hold tight…",
+    searchingLong: "Still scanning… free tiers can be slow on first hit.",
+    success: (n, svc) => n > 0
+      ? `Done! Found ${n} hit${n>1?'s':''} across ${svc} source${svc>1?'s':''}. Check the Results tab.`
+      : `Scan complete — no leaks found across ${svc} source${svc>1?'s':''}. Good news!`,
+    error: "Something broke upstream. Check Configuration → Connectors status.",
+    partialError: "Some connectors failed but I got partial results. Check Results."
+  },
+  it: {
+    hello: "Ciao! Sono NOVA, la tua analista OSINT. Lancia una query e mi metto al lavoro.",
+    idle: "Pronta quando vuoi. Lancia una query per iniziare.",
+    searching: "Sto incrociando i database di leak. Un attimo…",
+    searchingLong: "Ancora in scansione… i free tier sono lenti la prima volta.",
+    success: (n, svc) => n > 0
+      ? `Fatto! ${n} hit trovat${n>1?'i':'o'} su ${svc} font${svc>1?'i':'e'}. Controlla la tab Risultati.`
+      : `Scansione completa — nessun leak su ${svc} font${svc>1?'i':'e'}. Buone notizie!`,
+    error: "Qualcosa si è rotto upstream. Controlla Configurazione → Stato connettori.",
+    partialError: "Alcuni connettori hanno fallito ma ho risultati parziali. Vedi Risultati."
+  }
+};
+
+let _avatarStateTimer = null;
+function setAvatarState(state, message) {
+  const stage = document.getElementById('avatarStage');
+  const msg = document.getElementById('avatarBubbleMsg');
+  if (!stage || !msg) return;
+  if (_avatarStateTimer) { clearTimeout(_avatarStateTimer); _avatarStateTimer = null; }
+  stage.dataset.state = state;
+  if (message) {
+    msg.style.opacity = '0';
+    setTimeout(() => { msg.textContent = message; msg.style.opacity = '1'; }, 150);
+  }
+}
+function avatarMsg(key, ...args) {
+  const lines = AVATAR_LINES[currentLang] || AVATAR_LINES.en;
+  const v = lines[key];
+  return typeof v === 'function' ? v(...args) : v;
 }
 
 /* ============ Search Orchestrator ============ */
@@ -2909,6 +3191,9 @@ async function login() {
   // Handle SOAR auto-search
   await handleSoarParams();
   toast(restored ? 'Configurazione cifrata ripristinata. ✓' : 'Sessione avviata. Buona caccia! 🛡️', 'success');
+  // Avatar greeting
+  setAvatarState('hello', avatarMsg('hello'));
+  setTimeout(() => setAvatarState('idle', avatarMsg('idle')), 4500);
 }
 
 async function handleSoarParams() {
@@ -2951,6 +3236,13 @@ async function triggerSearch() {
   const btn = $('#searchBtn');
   btn.disabled = true;
   btn.innerHTML = `<span class="spinner"></span> ${t('search.running')}`;
+  setAvatarState('searching', avatarMsg('searching'));
+  // Promemoria dopo 8s se ancora in corso
+  _avatarStateTimer = setTimeout(() => {
+    if (document.getElementById('avatarStage').dataset.state === 'searching') {
+      setAvatarState('searching', avatarMsg('searchingLong'));
+    }
+  }, 8000);
   location.hash = '#results';
   $('#resultsContainer').innerHTML = `
     <div class="card">
@@ -2972,6 +3264,19 @@ async function triggerSearch() {
   renderRecent();
   updateHeroStats();
   renderResults(payload);
+
+  // Avatar feedback
+  const okSvc = payload.results.filter(r => r.status === 'success').length;
+  const errSvc = payload.results.filter(r => r.status === 'error').length;
+  const totalHits = payload.results.reduce((a, r) => a + (r.count || 0), 0);
+  if (okSvc === 0 && errSvc > 0) {
+    setAvatarState('error', avatarMsg('error'));
+  } else if (errSvc > 0) {
+    setAvatarState('talking', avatarMsg('partialError'));
+    setTimeout(() => setAvatarState('success', avatarMsg('success', totalHits, okSvc)), 4000);
+  } else {
+    setAvatarState('success', avatarMsg('success', totalHits, okSvc));
+  }
 
   btn.disabled = false;
   btn.innerHTML = `<i data-lucide="search"></i> <span data-i18n="search.run">${t('search.run')}</span>`;
