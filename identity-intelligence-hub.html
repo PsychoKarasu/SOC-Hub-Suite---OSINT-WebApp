@@ -1140,16 +1140,59 @@ input, select, textarea { font-family: inherit; }
   50% { transform: translateY(4px) scale(0.985); }
 }
 
-/* WAVE on initial mount */
+/* HELLO (wave): right arm waving, big smile */
 .avatar-stage[data-state="hello"] .av-mouth-idle { opacity: 0; }
 .avatar-stage[data-state="hello"] .av-mouth-smile { opacity: 1; }
-.avatar-stage[data-state="hello"] .av-body { animation: avWave 1.6s ease-in-out 1; }
+.avatar-stage[data-state="hello"] .av-mouth-smile-tongue { opacity: 1; }
+.avatar-stage[data-state="hello"] .av-arms-idle { opacity: 0; }
+.avatar-stage[data-state="hello"] .av-arms-wave { opacity: 1; }
+.avatar-stage[data-state="hello"] .sk-wave-arm {
+  transform-origin: 230px 240px;
+  animation: skWaveHand 1s ease-in-out infinite;
+}
+.avatar-stage[data-state="hello"] .av-body {
+  animation: avBob 1.6s ease-in-out infinite;
+}
+@keyframes skWaveHand {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
 @keyframes avWave {
   0% { transform: translateY(0) rotate(0); }
   25% { transform: translateY(-4px) rotate(-3deg); }
   50% { transform: translateY(0) rotate(3deg); }
   75% { transform: translateY(-2px) rotate(-2deg); }
   100% { transform: translateY(0); }
+}
+
+/* ERROR override: usa sad arms per coprire viso (più espressivo) */
+.avatar-stage[data-state="error"] .av-arms-idle { opacity: 0; }
+.avatar-stage[data-state="error"] .av-arms-sad { opacity: 1; }
+
+/* ANGRY: sopracciglia incazzate, bocca zigzag, anger mark, tremore body */
+.avatar-stage[data-state="angry"] .av-mouth-idle { opacity: 0; }
+.avatar-stage[data-state="angry"] .av-mouth-angry { opacity: 1; }
+.avatar-stage[data-state="angry"] .sk-anger { opacity: 1; animation: skAngerPulse 0.8s ease-in-out infinite; }
+.avatar-stage[data-state="angry"] .av-brow-l { transform: rotate(15deg) translate(2px, 4px); transform-origin: 156px 142px; }
+.avatar-stage[data-state="angry"] .av-brow-r { transform: rotate(-15deg) translate(-2px, 4px); transform-origin: 204px 142px; }
+.avatar-stage[data-state="angry"] .av-body { animation: skTremor 0.15s linear infinite; }
+@keyframes skAngerPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+@keyframes skTremor {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-1px); }
+  75% { transform: translateX(1px); }
+}
+
+/* Pigtail sway gentle in idle */
+.sk-pigtail-l { transform-origin: 95 145; animation: skPigSwayL 6s ease-in-out infinite; }
+.sk-pigtail-r { transform-origin: 265 145; animation: skPigSwayR 6s ease-in-out infinite; }
+@keyframes skPigSwayL {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+@keyframes skPigSwayR {
+  0%, 100% { transform: rotate(2deg); }
+  50% { transform: rotate(-2deg); }
 }
 
 /* Hero art (anime cyber investigator) */
@@ -1463,9 +1506,9 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v2.3</span>
+        <span>v2.4</span>
         <span class="version-sep">·</span>
-        <span>token-saver</span>
+        <span>Sakura</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
         OSINT · CTI · BREACH-DATA
@@ -1478,7 +1521,7 @@ input, select, textarea { font-family: inherit; }
     <div class="avatar-stage" data-state="idle" id="avatarStage">
       <div class="avatar-bubble" id="avatarBubble">
         <div class="avatar-bubble-inner">
-          <div class="avatar-bubble-name">NOVA <span class="avatar-bubble-tag">analyst</span></div>
+          <div class="avatar-bubble-name">SAKURA <span class="avatar-bubble-tag">analyst</span></div>
           <div class="avatar-bubble-msg" id="avatarBubbleMsg">Ready when you are. Run a query to begin.</div>
         </div>
         <span class="avatar-bubble-arrow"></span>
@@ -1488,133 +1531,335 @@ input, select, textarea { font-family: inherit; }
         <div class="avatar-floor"></div>
         <svg class="avatar-svg" viewBox="0 0 360 460" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="avHair" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#22d3c8"/><stop offset="50%" stop-color="#5eead4"/><stop offset="100%" stop-color="#818cf8"/>
+            <!-- Pink hair gradient -->
+            <linearGradient id="skHair" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffd1e0"/>
+              <stop offset="40%" stop-color="#f8a5c8"/>
+              <stop offset="100%" stop-color="#e879a8"/>
             </linearGradient>
-            <linearGradient id="avHairLight" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#a7f3d0" stop-opacity="0.9"/><stop offset="100%" stop-color="#a7f3d0" stop-opacity="0"/>
+            <linearGradient id="skHairLight" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity="0.85"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
             </linearGradient>
-            <linearGradient id="avSkin" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fbe2c7"/><stop offset="100%" stop-color="#e8c5a3"/>
+            <linearGradient id="skHairShade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#a64a78" stop-opacity="0"/>
+              <stop offset="100%" stop-color="#a64a78" stop-opacity="0.4"/>
             </linearGradient>
-            <linearGradient id="avSkinShade" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.25"/>
+            <!-- Skin -->
+            <linearGradient id="skSkin" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fff1e0"/>
+              <stop offset="100%" stop-color="#fadbb8"/>
             </linearGradient>
-            <linearGradient id="avHoodie" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#1f2937"/><stop offset="100%" stop-color="#0a0e15"/>
-            </linearGradient>
-            <linearGradient id="avHoodieAccent" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#5eead4"/><stop offset="100%" stop-color="#818cf8"/>
-            </linearGradient>
-            <linearGradient id="avLaptop" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2d3748"/><stop offset="100%" stop-color="#1a202c"/>
-            </linearGradient>
-            <linearGradient id="avScreen" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#5eead4"/><stop offset="100%" stop-color="#818cf8"/>
-            </linearGradient>
-            <radialGradient id="avBlush" cx="50%" cy="50%">
-              <stop offset="0%" stop-color="#f472b6" stop-opacity="0.45"/><stop offset="100%" stop-color="#f472b6" stop-opacity="0"/>
+            <radialGradient id="skBlush" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="#ff8db4" stop-opacity="0.5"/>
+              <stop offset="100%" stop-color="#ff8db4" stop-opacity="0"/>
             </radialGradient>
-            <filter id="avSoftShadow"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/><feOffset dx="0" dy="4" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <!-- Eyes -->
+            <radialGradient id="skIris" cx="50%" cy="40%">
+              <stop offset="0%" stop-color="#fbcfe8"/>
+              <stop offset="50%" stop-color="#ec4899"/>
+              <stop offset="100%" stop-color="#9d174d"/>
+            </radialGradient>
+            <!-- Blouse white -->
+            <linearGradient id="skBlouse" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#e6e8ed"/>
+            </linearGradient>
+            <!-- Pinafore dress dark -->
+            <linearGradient id="skDress" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2a2f48"/>
+              <stop offset="100%" stop-color="#13162a"/>
+            </linearGradient>
+            <linearGradient id="skSkirt" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#13162a"/>
+              <stop offset="50%" stop-color="#2a2f48"/>
+              <stop offset="100%" stop-color="#13162a"/>
+            </linearGradient>
+            <!-- Stockings -->
+            <linearGradient id="skStocking" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1f2333"/>
+              <stop offset="100%" stop-color="#0c0e1a"/>
+            </linearGradient>
+            <!-- Shoes brown -->
+            <linearGradient id="skShoe" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#8b5a3c"/>
+              <stop offset="100%" stop-color="#5d3a25"/>
+            </linearGradient>
+            <!-- Laptop -->
+            <linearGradient id="skLaptop" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3a4257"/>
+              <stop offset="100%" stop-color="#1f2333"/>
+            </linearGradient>
+            <linearGradient id="skScreen" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#5eead4"/>
+              <stop offset="100%" stop-color="#ec4899"/>
+            </linearGradient>
+            <filter id="skSoft">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+              <feOffset dx="0" dy="3" result="b"/>
+              <feComponentTransfer><feFuncA type="linear" slope="0.45"/></feComponentTransfer>
+              <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
           </defs>
+
+          <!-- Body group: subtle breathing -->
           <g class="av-body">
-            <path d="M 95 280 Q 75 230 100 195 L 130 175 Q 180 165 230 175 L 260 195 Q 285 230 265 280 L 260 380 Q 180 405 100 380 Z" fill="url(#avHoodie)" filter="url(#avSoftShadow)"/>
-            <path d="M 110 235 Q 130 215 145 215 L 215 215 Q 230 215 250 235 L 250 280 L 110 280 Z" fill="#000" opacity="0.35"/>
-            <line x1="180" y1="220" x2="180" y2="380" stroke="#5eead4" stroke-width="1.2" opacity="0.55"/>
-            <path d="M 130 265 L 230 265 L 226 272 L 134 272 Z" fill="url(#avHoodieAccent)" opacity="0.55"/>
-            <line class="av-string" x1="155" y1="195" x2="155" y2="245" stroke="#5eead4" stroke-width="1.4" opacity="0.85"/>
-            <line class="av-string" x1="205" y1="195" x2="205" y2="245" stroke="#5eead4" stroke-width="1.4" opacity="0.85"/>
-            <circle cx="155" cy="248" r="3" fill="#5eead4"/><circle cx="205" cy="248" r="3" fill="#5eead4"/>
-            <path d="M 100 195 Q 90 130 140 105 Q 180 92 220 105 Q 270 130 260 195 L 230 175 Q 180 165 130 175 Z" fill="url(#avHoodie)"/>
-            <path d="M 105 220 Q 95 290 115 360 L 130 360 Q 122 290 130 235 Z" fill="url(#avHair)" opacity="0.75"/>
-            <path d="M 255 220 Q 265 290 245 360 L 230 360 Q 238 290 230 235 Z" fill="url(#avHair)" opacity="0.75"/>
-            <rect x="165" y="160" width="30" height="30" rx="6" fill="url(#avSkin)"/>
-            <rect x="165" y="160" width="30" height="20" rx="4" fill="#000" opacity="0.18"/>
-            <ellipse class="av-head" cx="180" cy="125" rx="55" ry="62" fill="url(#avSkin)" filter="url(#avSoftShadow)"/>
-            <ellipse cx="200" cy="125" rx="35" ry="55" fill="url(#avSkinShade)" opacity="0.5"/>
-            <path d="M 158 165 Q 180 185 202 165 L 200 175 Q 180 190 160 175 Z" fill="#000" opacity="0.08"/>
-            <path d="M 120 110 Q 180 78 240 110 L 240 132 Q 215 118 180 118 Q 145 118 120 132 Z" fill="url(#avHoodie)"/>
-            <path d="M 120 110 Q 180 78 240 110" fill="none" stroke="#5eead4" stroke-width="1.2" opacity="0.6"/>
-            <path d="M 128 130 Q 145 110 165 122 Q 180 108 195 122 Q 215 110 232 130 Q 224 152 200 142 Q 180 132 160 142 Q 136 152 128 130 Z" fill="url(#avHair)"/>
-            <path d="M 132 132 Q 158 116 170 130 L 168 142 Q 150 128 132 132 Z" fill="url(#avHairLight)" opacity="0.5"/>
-            <path d="M 122 155 Q 115 175 122 200 L 132 200 Q 128 175 132 155 Z" fill="url(#avHair)"/>
-            <path d="M 238 155 Q 245 175 238 200 L 228 200 Q 232 175 228 155 Z" fill="url(#avHair)"/>
 
+            <!-- ===== HAIR BACK LAYER (lunghi capelli oltre le spalle) ===== -->
+            <path d="M 110 130 Q 78 200 75 290 Q 78 360 100 410 L 130 415 Q 118 360 122 280 Q 125 200 140 145 Z" fill="url(#skHair)"/>
+            <path d="M 250 130 Q 282 200 285 290 Q 282 360 260 410 L 230 415 Q 242 360 238 280 Q 235 200 220 145 Z" fill="url(#skHair)"/>
+            <!-- Hair back highlight -->
+            <path d="M 100 200 Q 92 280 105 360" fill="none" stroke="#fff" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+            <path d="M 260 200 Q 268 280 255 360" fill="none" stroke="#fff" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+
+            <!-- ===== LEGS (stockings + shoes) ===== -->
+            <g class="sk-legs">
+              <!-- Cosce dress shadow -->
+              <ellipse cx="155" cy="358" rx="22" ry="8" fill="#000" opacity="0.3"/>
+              <ellipse cx="205" cy="358" rx="22" ry="8" fill="#000" opacity="0.3"/>
+              <!-- Stocking left -->
+              <path d="M 138 360 Q 134 400 138 440 L 168 440 Q 170 400 168 360 Z" fill="url(#skStocking)"/>
+              <!-- Stocking right -->
+              <path d="M 192 360 Q 190 400 192 440 L 222 440 Q 226 400 222 360 Z" fill="url(#skStocking)"/>
+              <!-- Stocking top band -->
+              <rect x="138" y="358" width="30" height="3" fill="#000" opacity="0.5"/>
+              <rect x="192" y="358" width="30" height="3" fill="#000" opacity="0.5"/>
+              <!-- Stocking shine -->
+              <line x1="142" y1="365" x2="143" y2="438" stroke="#fff" stroke-width="1.4" opacity="0.18"/>
+              <line x1="196" y1="365" x2="197" y2="438" stroke="#fff" stroke-width="1.4" opacity="0.18"/>
+              <!-- Shoes brown -->
+              <ellipse cx="153" cy="445" rx="18" ry="8" fill="url(#skShoe)"/>
+              <ellipse cx="207" cy="445" rx="18" ry="8" fill="url(#skShoe)"/>
+              <!-- Shoe shine -->
+              <ellipse cx="151" cy="442" rx="8" ry="2" fill="#fff" opacity="0.25"/>
+              <ellipse cx="205" cy="442" rx="8" ry="2" fill="#fff" opacity="0.25"/>
+            </g>
+
+            <!-- ===== PINAFORE SKIRT (pleated A-line) ===== -->
+            <path d="M 120 290 Q 130 280 145 280 L 215 280 Q 230 280 240 290 L 260 365 Q 180 380 100 365 Z" fill="url(#skSkirt)" filter="url(#skSoft)"/>
+            <!-- Pleat lines -->
+            <line x1="135" y1="295" x2="118" y2="362" stroke="#000" stroke-width="0.6" opacity="0.4"/>
+            <line x1="155" y1="290" x2="148" y2="368" stroke="#000" stroke-width="0.6" opacity="0.4"/>
+            <line x1="180" y1="288" x2="180" y2="370" stroke="#000" stroke-width="0.6" opacity="0.4"/>
+            <line x1="205" y1="290" x2="212" y2="368" stroke="#000" stroke-width="0.6" opacity="0.4"/>
+            <line x1="225" y1="295" x2="242" y2="362" stroke="#000" stroke-width="0.6" opacity="0.4"/>
+            <!-- Skirt bottom highlight -->
+            <path d="M 110 360 Q 180 376 250 360" fill="none" stroke="#fff" stroke-width="0.8" opacity="0.18"/>
+
+            <!-- ===== BLOUSE (white short-sleeve) ===== -->
+            <path d="M 130 235 Q 125 270 130 295 L 230 295 Q 235 270 230 235 L 215 230 L 145 230 Z" fill="url(#skBlouse)" filter="url(#skSoft)"/>
+            <!-- Blouse buttons line -->
+            <line x1="180" y1="240" x2="180" y2="290" stroke="#d8d8e0" stroke-width="0.5"/>
+            <circle cx="180" cy="252" r="1.2" fill="#c0c0c8"/>
+            <circle cx="180" cy="270" r="1.2" fill="#c0c0c8"/>
+            <circle cx="180" cy="285" r="1.2" fill="#c0c0c8"/>
+
+            <!-- ===== PINAFORE STRAPS (suspenders dark) ===== -->
+            <path d="M 152 230 L 150 290 L 160 290 L 162 232 Z" fill="url(#skDress)"/>
+            <path d="M 208 230 L 210 290 L 200 290 L 198 232 Z" fill="url(#skDress)"/>
+
+            <!-- ===== COLLAR (white with black ribbon) ===== -->
+            <path d="M 158 220 L 145 240 L 165 240 Z" fill="#ffffff" stroke="#d8d8e0" stroke-width="0.5"/>
+            <path d="M 202 220 L 215 240 L 195 240 Z" fill="#ffffff" stroke="#d8d8e0" stroke-width="0.5"/>
+            <!-- Black bow tie -->
+            <g transform="translate(180 232)">
+              <path d="M -10 -4 L -2 0 L -10 4 Z" fill="#1a1a1a"/>
+              <path d="M 10 -4 L 2 0 L 10 4 Z" fill="#1a1a1a"/>
+              <ellipse cx="0" cy="0" rx="3" ry="2.5" fill="#0a0a0a"/>
+              <line x1="-2" y1="3" x2="-2" y2="14" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+            </g>
+
+            <!-- ===== NECK ===== -->
+            <rect x="170" y="200" width="20" height="22" rx="4" fill="url(#skSkin)"/>
+            <ellipse cx="180" cy="218" rx="14" ry="3" fill="#000" opacity="0.12"/>
+
+            <!-- ===== HEAD ===== -->
+            <ellipse class="sk-head" cx="180" cy="155" rx="58" ry="65" fill="url(#skSkin)" filter="url(#skSoft)"/>
+            <!-- Side shading -->
+            <path d="M 215 130 Q 240 170 215 210 Q 200 200 205 165 Z" fill="#000" opacity="0.08"/>
+            <!-- Jaw shadow -->
+            <path d="M 158 200 Q 180 218 202 200" fill="none" stroke="#000" stroke-width="0.6" opacity="0.15"/>
+
+            <!-- ===== HAIR FRONT (bangs ondulati anime) ===== -->
+            <!-- Bangs main -->
+            <path d="M 122 145 Q 135 105 165 95 Q 178 90 195 95 Q 225 105 240 145 Q 230 175 200 162 Q 190 152 180 158 Q 170 152 160 162 Q 130 175 122 145 Z" fill="url(#skHair)"/>
+            <!-- Bangs details / strands -->
+            <path d="M 130 138 Q 152 118 175 130 Q 175 148 162 158 Q 142 158 130 138 Z" fill="url(#skHair)" stroke="#a64a78" stroke-width="0.4" opacity="0.95"/>
+            <path d="M 188 130 Q 215 120 232 145 Q 220 160 200 158 Q 188 152 188 130 Z" fill="url(#skHair)" stroke="#a64a78" stroke-width="0.4" opacity="0.95"/>
+            <!-- Bang highlights -->
+            <path d="M 135 130 Q 155 120 168 130" fill="none" stroke="#fff" stroke-width="2" opacity="0.55" stroke-linecap="round"/>
+            <path d="M 195 128 Q 215 120 228 138" fill="none" stroke="#fff" stroke-width="2" opacity="0.55" stroke-linecap="round"/>
+            <!-- Side hair tufts -->
+            <path d="M 118 150 Q 110 175 115 210 Q 122 215 128 210 Q 122 175 130 150 Z" fill="url(#skHair)"/>
+            <path d="M 242 150 Q 250 175 245 210 Q 238 215 232 210 Q 238 175 230 150 Z" fill="url(#skHair)"/>
+
+            <!-- ===== TWIN PONYTAILS (laterali, animati con sway) ===== -->
+            <g class="sk-pigtail-l">
+              <path d="M 95 145 Q 60 175 50 230 Q 55 250 75 245 Q 90 200 105 165 Z" fill="url(#skHair)"/>
+              <path d="M 65 175 Q 58 215 70 240" fill="none" stroke="#fff" stroke-width="1.8" opacity="0.45" stroke-linecap="round"/>
+              <!-- Black hairband ribbon -->
+              <path d="M 96 148 Q 88 144 86 152 Q 88 158 98 156 Z" fill="#1a1a1a"/>
+              <ellipse cx="92" cy="150" rx="3" ry="2.5" fill="#1a1a1a"/>
+            </g>
+            <g class="sk-pigtail-r">
+              <path d="M 265 145 Q 300 175 310 230 Q 305 250 285 245 Q 270 200 255 165 Z" fill="url(#skHair)"/>
+              <path d="M 295 175 Q 302 215 290 240" fill="none" stroke="#fff" stroke-width="1.8" opacity="0.45" stroke-linecap="round"/>
+              <path d="M 264 148 Q 272 144 274 152 Q 272 158 262 156 Z" fill="#1a1a1a"/>
+              <ellipse cx="268" cy="150" rx="3" ry="2.5" fill="#1a1a1a"/>
+            </g>
+
+            <!-- ===== EYES (anime large) ===== -->
             <g class="av-eyes">
-              <ellipse class="av-eye-white" cx="159" cy="140" rx="9" ry="10" fill="#fff"/>
-              <ellipse class="av-iris" cx="159" cy="142" rx="6.5" ry="7.5" fill="#5eead4"/>
-              <ellipse cx="159" cy="146" rx="5" ry="5" fill="#0a0e15"/>
-              <circle cx="161" cy="138" r="2" fill="#fff"/>
-              <circle cx="156" cy="148" r="1" fill="#fff" opacity="0.85"/>
-              <ellipse class="av-eye-white" cx="201" cy="140" rx="9" ry="10" fill="#fff"/>
-              <ellipse class="av-iris" cx="201" cy="142" rx="6.5" ry="7.5" fill="#5eead4"/>
-              <ellipse cx="201" cy="146" rx="5" ry="5" fill="#0a0e15"/>
-              <circle cx="203" cy="138" r="2" fill="#fff"/>
-              <circle cx="198" cy="148" r="1" fill="#fff" opacity="0.85"/>
+              <!-- Left eye -->
+              <ellipse class="sk-eye-shape" cx="155" cy="165" rx="13" ry="16" fill="#fff"/>
+              <ellipse cx="155" cy="170" rx="11" ry="14" fill="url(#skIris)"/>
+              <ellipse cx="155" cy="172" rx="6" ry="9" fill="#831843"/>
+              <ellipse cx="155" cy="174" rx="3.5" ry="5" fill="#0a0a0a"/>
+              <!-- Sparkles -->
+              <circle cx="159" cy="160" r="3.5" fill="#fff"/>
+              <circle cx="151" cy="178" r="2" fill="#fff" opacity="0.85"/>
+              <ellipse cx="151" cy="167" rx="1.5" ry="2.5" fill="#fff" opacity="0.6"/>
+              <!-- Right eye -->
+              <ellipse class="sk-eye-shape" cx="205" cy="165" rx="13" ry="16" fill="#fff"/>
+              <ellipse cx="205" cy="170" rx="11" ry="14" fill="url(#skIris)"/>
+              <ellipse cx="205" cy="172" rx="6" ry="9" fill="#831843"/>
+              <ellipse cx="205" cy="174" rx="3.5" ry="5" fill="#0a0a0a"/>
+              <circle cx="209" cy="160" r="3.5" fill="#fff"/>
+              <circle cx="201" cy="178" r="2" fill="#fff" opacity="0.85"/>
+              <ellipse cx="201" cy="167" rx="1.5" ry="2.5" fill="#fff" opacity="0.6"/>
             </g>
+
+            <!-- Eyelashes -->
+            <path d="M 142 152 Q 155 148 168 152" fill="none" stroke="#3a1a2a" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M 192 152 Q 205 148 218 152" fill="none" stroke="#3a1a2a" stroke-width="2.2" stroke-linecap="round"/>
+
+            <!-- Closed/blinking eyes (when triggered) -->
             <g class="av-eyelids" opacity="0">
-              <path d="M 150 140 Q 159 145 168 140" fill="none" stroke="#1f2937" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M 192 140 Q 201 145 210 140" fill="none" stroke="#1f2937" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M 142 168 Q 155 172 168 168" fill="none" stroke="#3a1a2a" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M 192 168 Q 205 172 218 168" fill="none" stroke="#3a1a2a" stroke-width="2.5" stroke-linecap="round"/>
             </g>
+
+            <!-- Eyebrows -->
             <g class="av-brows">
-              <path class="av-brow-l" d="M 148 128 Q 159 122 170 128" fill="none" stroke="#22d3c8" stroke-width="2.5" stroke-linecap="round"/>
-              <path class="av-brow-r" d="M 190 128 Q 201 122 212 128" fill="none" stroke="#22d3c8" stroke-width="2.5" stroke-linecap="round"/>
+              <path class="av-brow-l" d="M 144 142 Q 156 137 168 142" fill="none" stroke="#a64a78" stroke-width="2.2" stroke-linecap="round"/>
+              <path class="av-brow-r" d="M 192 142 Q 204 137 216 142" fill="none" stroke="#a64a78" stroke-width="2.2" stroke-linecap="round"/>
             </g>
-            <g class="av-glasses">
-              <rect x="146" y="132" width="26" height="20" rx="6" fill="rgba(94,234,212,0.06)" stroke="#5eead4" stroke-width="2"/>
-              <rect x="188" y="132" width="26" height="20" rx="6" fill="rgba(94,234,212,0.06)" stroke="#5eead4" stroke-width="2"/>
-              <line x1="172" y1="142" x2="188" y2="142" stroke="#5eead4" stroke-width="2"/>
-              <rect class="av-lens-flash" x="146" y="132" width="26" height="20" rx="6" fill="#5eead4" opacity="0.18"/>
-              <rect class="av-lens-flash" x="188" y="132" width="26" height="20" rx="6" fill="#5eead4" opacity="0.18" style="animation-delay:0.3s"/>
-            </g>
-            <ellipse cx="148" cy="160" rx="9" ry="5" fill="url(#avBlush)"/>
-            <ellipse cx="212" cy="160" rx="9" ry="5" fill="url(#avBlush)"/>
 
-            <path class="av-mouth av-mouth-idle" d="M 173 170 Q 180 173 187 170" fill="none" stroke="#9c4f5c" stroke-width="1.8" stroke-linecap="round"/>
-            <path class="av-mouth av-mouth-smile" d="M 168 168 Q 180 180 192 168" fill="#9c4f5c" stroke="#7c3a47" stroke-width="1" opacity="0"/>
-            <path class="av-mouth av-mouth-talk" d="M 172 170 L 188 170 L 188 178 L 172 178 Z" fill="#5e2c39" opacity="0"/>
-            <path class="av-mouth av-mouth-sad" d="M 168 178 Q 180 168 192 178" fill="none" stroke="#9c4f5c" stroke-width="2" stroke-linecap="round" opacity="0"/>
-            <path class="av-mouth av-mouth-focus" d="M 174 172 L 186 172" fill="none" stroke="#9c4f5c" stroke-width="2" stroke-linecap="round" opacity="0"/>
+            <!-- Blush -->
+            <ellipse cx="148" cy="190" rx="11" ry="5" fill="url(#skBlush)"/>
+            <ellipse cx="212" cy="190" rx="11" ry="5" fill="url(#skBlush)"/>
 
+            <!-- Nose hint -->
+            <path d="M 178 184 L 180 190 L 182 184" fill="none" stroke="#d4a890" stroke-width="0.8" stroke-linecap="round" opacity="0.7"/>
+
+            <!-- ===== MOUTH VARIANTS ===== -->
+            <path class="av-mouth av-mouth-idle" d="M 173 200 Q 180 203 187 200" fill="none" stroke="#c14c70" stroke-width="1.6" stroke-linecap="round"/>
+            <!-- Big smile (success/hello) -->
+            <path class="av-mouth av-mouth-smile" d="M 168 198 Q 180 212 192 198" fill="#9c2858" stroke="#7a1d44" stroke-width="0.8" opacity="0"/>
+            <path class="av-mouth av-mouth-smile-tongue" d="M 174 204 Q 180 209 186 204 Q 184 207 180 207 Q 176 207 174 204 Z" fill="#ff7a9b" opacity="0"/>
+            <!-- Talking (open mouth) -->
+            <ellipse class="av-mouth av-mouth-talk" cx="180" cy="202" rx="5" ry="4" fill="#5e1830" opacity="0"/>
+            <!-- Sad mouth -->
+            <path class="av-mouth av-mouth-sad" d="M 168 208 Q 180 198 192 208" fill="none" stroke="#c14c70" stroke-width="2" stroke-linecap="round" opacity="0"/>
+            <!-- Focused tight -->
+            <path class="av-mouth av-mouth-focus" d="M 174 202 L 186 202" fill="none" stroke="#c14c70" stroke-width="2" stroke-linecap="round" opacity="0"/>
+            <!-- Angry zigzag -->
+            <path class="av-mouth av-mouth-angry" d="M 170 204 L 174 200 L 178 204 L 182 200 L 186 204 L 190 200" fill="none" stroke="#c14c70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0"/>
+
+            <!-- ===== TEARS (error state) ===== -->
             <g class="av-tears" opacity="0">
-              <path d="M 159 152 Q 156 165 162 175 Q 167 165 161 152" fill="#60a5fa" opacity="0.85"/>
-              <path d="M 201 152 Q 198 165 204 175 Q 209 165 203 152" fill="#60a5fa" opacity="0.85"/>
+              <path d="M 155 184 Q 152 200 156 215 Q 160 200 158 184" fill="#7dd3fc" opacity="0.92"/>
+              <path d="M 205 184 Q 202 200 206 215 Q 210 200 208 184" fill="#7dd3fc" opacity="0.92"/>
+              <circle cx="156" cy="218" r="3" fill="#7dd3fc" opacity="0.85"/>
+              <circle cx="206" cy="218" r="3" fill="#7dd3fc" opacity="0.85"/>
             </g>
 
+            <!-- Anger marks (when angry state) -->
+            <g class="sk-anger" opacity="0">
+              <path d="M 110 110 L 118 110 L 114 100 M 110 100 L 118 110" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
+            </g>
+
+            <!-- ===== ARMS - IDLE pose (relaxed at sides) ===== -->
             <g class="av-arms av-arms-idle">
-              <path d="M 95 270 Q 70 320 85 380" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
-              <path d="M 265 270 Q 290 320 275 380" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
-              <ellipse cx="85" cy="385" rx="11" ry="9" fill="url(#avSkin)"/>
-              <ellipse cx="275" cy="385" rx="11" ry="9" fill="url(#avSkin)"/>
-            </g>
-            <g class="av-arms av-arms-search" opacity="0">
-              <path d="M 95 270 Q 105 305 140 320" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
-              <path d="M 265 270 Q 255 305 220 320" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
-              <ellipse cx="140" cy="320" rx="11" ry="9" fill="url(#avSkin)"/>
-              <ellipse cx="220" cy="320" rx="11" ry="9" fill="url(#avSkin)"/>
-            </g>
-            <g class="av-arms av-arms-point" opacity="0">
-              <path d="M 95 270 Q 60 285 35 270" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
-              <path d="M 265 270 Q 290 320 275 380" fill="none" stroke="#0a0e15" stroke-width="32" stroke-linecap="round"/>
-              <ellipse cx="35" cy="270" rx="11" ry="9" fill="url(#avSkin)"/>
-              <line x1="35" y1="270" x2="20" y2="262" stroke="#fbe2c7" stroke-width="6" stroke-linecap="round"/>
-              <ellipse cx="275" cy="385" rx="11" ry="9" fill="url(#avSkin)"/>
+              <!-- Left arm -->
+              <path d="M 130 240 Q 110 280 105 340" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+              <!-- Right arm -->
+              <path d="M 230 240 Q 250 280 255 340" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+              <!-- Hands -->
+              <ellipse cx="105" cy="345" rx="9" ry="11" fill="url(#skSkin)"/>
+              <ellipse cx="255" cy="345" rx="9" ry="11" fill="url(#skSkin)"/>
+              <!-- Short sleeves -->
+              <path d="M 122 232 Q 110 250 110 268 L 134 268 Q 138 250 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <path d="M 238 232 Q 250 250 250 268 L 226 268 Q 222 250 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
             </g>
 
-            <g class="av-laptop" opacity="0">
-              <path d="M 105 340 L 95 360 L 265 360 L 255 340 Z" fill="url(#avLaptop)"/>
-              <rect x="110" y="290" width="140" height="55" rx="3" fill="url(#avLaptop)"/>
-              <rect x="115" y="294" width="130" height="47" rx="2" fill="url(#avScreen)" opacity="0.25"/>
-              <line class="av-code" x1="120" y1="302" x2="160" y2="302" stroke="#5eead4" stroke-width="1.4" opacity="0.95"/>
-              <line class="av-code" x1="120" y1="308" x2="180" y2="308" stroke="#aab5c2" stroke-width="1" opacity="0.7"/>
-              <line class="av-code" x1="120" y1="314" x2="150" y2="314" stroke="#aab5c2" stroke-width="1" opacity="0.6"/>
-              <line class="av-code" x1="120" y1="320" x2="170" y2="320" stroke="#5eead4" stroke-width="1" opacity="0.8"/>
-              <line class="av-code" x1="120" y1="326" x2="155" y2="326" stroke="#34d399" stroke-width="1" opacity="0.85"/>
-              <line class="av-code" x1="120" y1="332" x2="145" y2="332" stroke="#aab5c2" stroke-width="1" opacity="0.5"/>
-              <rect class="av-caret" x="148" y="328" width="2" height="6" fill="#5eead4"/>
-              <rect x="200" y="298" width="42" height="14" rx="3" fill="#5eead4" opacity="0.3"/>
-              <text x="221" y="308" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="6" fill="#5eead4" font-weight="700">SCAN</text>
+            <!-- ===== ARMS - SEARCH pose (hands on laptop) ===== -->
+            <g class="av-arms av-arms-search" opacity="0">
+              <path d="M 130 240 Q 130 290 155 310" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+              <path d="M 230 240 Q 230 290 205 310" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+              <ellipse cx="155" cy="310" rx="9" ry="8" fill="url(#skSkin)"/>
+              <ellipse cx="205" cy="310" rx="9" ry="8" fill="url(#skSkin)"/>
+              <path d="M 122 232 Q 110 250 115 268 L 138 268 Q 142 250 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <path d="M 238 232 Q 250 250 245 268 L 222 268 Q 218 250 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
             </g>
+
+            <!-- ===== ARMS - POINT pose (left arm pointing left, right at side) ===== -->
+            <g class="av-arms av-arms-point" opacity="0">
+              <!-- Left arm extended pointing -->
+              <path d="M 130 240 Q 100 235 60 245" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+              <ellipse cx="60" cy="245" rx="9" ry="8" fill="url(#skSkin)"/>
+              <!-- Pointing finger -->
+              <path d="M 60 245 L 38 240" stroke="url(#skSkin)" stroke-width="6" stroke-linecap="round"/>
+              <!-- Right arm at hip -->
+              <path d="M 230 240 Q 248 270 230 295" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+              <ellipse cx="230" cy="298" rx="9" ry="8" fill="url(#skSkin)"/>
+              <path d="M 122 232 Q 100 240 95 252 L 118 252 Q 130 244 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <path d="M 238 232 Q 252 250 240 268 L 220 268 Q 218 250 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+            </g>
+
+            <!-- ===== ARMS - WAVE pose (right arm waving up) ===== -->
+            <g class="av-arms av-arms-wave" opacity="0">
+              <!-- Left arm at side -->
+              <path d="M 130 240 Q 110 280 105 340" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+              <ellipse cx="105" cy="345" rx="9" ry="11" fill="url(#skSkin)"/>
+              <!-- Right arm waving -->
+              <g class="sk-wave-arm">
+                <path d="M 230 240 Q 260 200 275 150" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+                <ellipse cx="275" cy="148" rx="11" ry="10" fill="url(#skSkin)"/>
+                <!-- Fingers spread -->
+                <line x1="275" y1="148" x2="270" y2="135" stroke="url(#skSkin)" stroke-width="4" stroke-linecap="round"/>
+                <line x1="275" y1="148" x2="278" y2="132" stroke="url(#skSkin)" stroke-width="4" stroke-linecap="round"/>
+                <line x1="275" y1="148" x2="285" y2="138" stroke="url(#skSkin)" stroke-width="4" stroke-linecap="round"/>
+              </g>
+              <path d="M 122 232 Q 110 250 110 268 L 134 268 Q 138 250 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <path d="M 238 232 Q 252 220 258 200 L 240 195 Q 232 215 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+            </g>
+
+            <!-- ===== ARMS - SAD pose (one hand to face) ===== -->
+            <g class="av-arms av-arms-sad" opacity="0">
+              <!-- Left arm covering face -->
+              <path d="M 130 240 Q 130 200 150 180" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+              <ellipse cx="152" cy="178" rx="11" ry="9" fill="url(#skSkin)"/>
+              <!-- Right arm at side -->
+              <path d="M 230 240 Q 250 280 255 340" fill="none" stroke="#fadbb8" stroke-width="18" stroke-linecap="round"/>
+              <ellipse cx="255" cy="345" rx="9" ry="11" fill="url(#skSkin)"/>
+              <path d="M 122 232 Q 115 215 130 200 L 145 210 Q 138 224 134 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+              <path d="M 238 232 Q 250 250 250 268 L 226 268 Q 222 250 226 232 Z" fill="url(#skBlouse)" stroke="#d8d8e0" stroke-width="0.4"/>
+            </g>
+
+            <!-- ===== LAPTOP (only in search state) ===== -->
+            <g class="av-laptop" opacity="0">
+              <path d="M 130 320 L 120 340 L 240 340 L 230 320 Z" fill="url(#skLaptop)"/>
+              <rect x="135" y="280" width="90" height="42" rx="3" fill="url(#skLaptop)"/>
+              <rect x="139" y="284" width="82" height="34" rx="2" fill="url(#skScreen)" opacity="0.3"/>
+              <line class="av-code" x1="143" y1="290" x2="173" y2="290" stroke="#5eead4" stroke-width="1.4" opacity="0.95"/>
+              <line class="av-code" x1="143" y1="296" x2="195" y2="296" stroke="#fbcfe8" stroke-width="1" opacity="0.7"/>
+              <line class="av-code" x1="143" y1="302" x2="165" y2="302" stroke="#aab5c2" stroke-width="1" opacity="0.6"/>
+              <line class="av-code" x1="143" y1="308" x2="180" y2="308" stroke="#5eead4" stroke-width="1" opacity="0.8"/>
+              <line class="av-code" x1="143" y1="314" x2="170" y2="314" stroke="#34d399" stroke-width="1" opacity="0.85"/>
+              <rect class="av-caret" x="172" y="312" width="2" height="5" fill="#5eead4"/>
+            </g>
+
           </g>
         </svg>
       </div>
@@ -3020,29 +3265,31 @@ Generate the complete Identity Intelligence report. Remember: for every cited re
   }
 }
 
-/* ============ Avatar (NOVA) ============ */
+/* ============ Avatar (Sakura) ============ */
 const AVATAR_LINES = {
   en: {
-    hello: "Hi! I'm NOVA, your OSINT analyst. Run a query and I'll dig in.",
+    hello: "Hi! I'm Sakura, your OSINT analyst. Run a query and I'll dig in for you!",
     idle: "Ready when you are. Run a query to begin.",
     searching: "Cross-referencing leak databases. Hold tight…",
     searchingLong: "Still scanning… free tiers can be slow on first hit.",
     success: (n, svc) => n > 0
-      ? `Done! Found ${n} hit${n>1?'s':''} across ${svc} source${svc>1?'s':''}. Check the Results tab.`
-      : `Scan complete — no leaks found across ${svc} source${svc>1?'s':''}. Good news!`,
-    error: "Something broke upstream. Check Configuration → Connectors status.",
-    partialError: "Some connectors failed but I got partial results. Check Results."
+      ? `Done! Found ${n} hit${n>1?'s':''} across ${svc} source${svc>1?'s':''}. Check the Results tab! ✨`
+      : `Scan complete — no leaks found across ${svc} source${svc>1?'s':''}. All clean!`,
+    error: "Mou… something broke upstream. Check Configuration → Connectors status.",
+    partialError: "Some connectors failed but I got partial results. Check Results.",
+    angry: "Hmph! Some provider blocked us. Check the Worker logs."
   },
   it: {
-    hello: "Ciao! Sono NOVA, la tua analista OSINT. Lancia una query e mi metto al lavoro.",
+    hello: "Ciao! Sono Sakura, la tua analista OSINT. Lancia una query e mi metto subito al lavoro!",
     idle: "Pronta quando vuoi. Lancia una query per iniziare.",
     searching: "Sto incrociando i database di leak. Un attimo…",
     searchingLong: "Ancora in scansione… i free tier sono lenti la prima volta.",
     success: (n, svc) => n > 0
-      ? `Fatto! ${n} hit trovat${n>1?'i':'o'} su ${svc} font${svc>1?'i':'e'}. Controlla la tab Risultati.`
-      : `Scansione completa — nessun leak su ${svc} font${svc>1?'i':'e'}. Buone notizie!`,
-    error: "Qualcosa si è rotto upstream. Controlla Configurazione → Stato connettori.",
-    partialError: "Alcuni connettori hanno fallito ma ho risultati parziali. Vedi Risultati."
+      ? `Fatto! ${n} hit trovat${n>1?'i':'o'} su ${svc} font${svc>1?'i':'e'}. Controlla la tab Risultati! ✨`
+      : `Scansione completa — nessun leak su ${svc} font${svc>1?'i':'e'}. Tutto pulito!`,
+    error: "Mou… qualcosa si è rotto upstream. Controlla Configurazione → Stato connettori.",
+    partialError: "Alcuni connettori hanno fallito ma ho risultati parziali. Vedi Risultati.",
+    angry: "Hmph! Un provider ci sta bloccando. Controlla i log del Worker."
   }
 };
 
