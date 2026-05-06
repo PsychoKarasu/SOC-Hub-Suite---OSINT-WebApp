@@ -26,7 +26,7 @@
   base-uri 'self';
   form-action 'none';
 " />
-<title>Intel-Hub — Identity Intelligence Hub</title>
+<title>Phish-Hub — Email &amp; Phishing OSINT</title>
 <link rel="preconnect" href="https://api.fontshare.com" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,55 +37,55 @@
 <script src="https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js" crossorigin="anonymous"></script>
 <style>
-/* ========== INTEL-HUB DESIGN SYSTEM ========== */
+/* ========== PHISH-HUB DESIGN SYSTEM (red/amber palette) ========== */
 :root[data-theme="dark"] {
-  --bg-0: #05070b;
-  --bg-1: #0a0e15;
-  --bg-2: #11161f;
-  --bg-3: #1a212d;
-  --bg-4: #232b39;
-  --border: #1f2937;
-  --border-strong: #2f3a4a;
-  --text-1: #eef2f7;
-  --text-2: #aab5c2;
-  --text-3: #6e7a89;
-  --accent: #5eead4;          /* teal cyber primario */
-  --accent-2: #818cf8;         /* indigo */
-  --accent-3: #f472b6;         /* magenta */
+  --bg-0: #07060a;
+  --bg-1: #0d0a14;
+  --bg-2: #16111d;
+  --bg-3: #221a2c;
+  --bg-4: #2c2238;
+  --border: #261d34;
+  --border-strong: #3a2d4a;
+  --text-1: #f5f0f8;
+  --text-2: #c4b6c8;
+  --text-3: #8a7a92;
+  --accent: #f43f5e;          /* crimson primary */
+  --accent-2: #fb923c;         /* amber */
+  --accent-3: #fbbf24;         /* yellow */
   --success: #34d399;
   --warning: #fbbf24;
-  --danger: #f87171;
+  --danger: #ef4444;
   --info: #60a5fa;
   --shadow: 0 12px 40px rgba(0,0,0,0.55);
-  --shadow-glow: 0 0 24px rgba(94, 234, 212, 0.18);
-  --gradient: linear-gradient(135deg, #5eead4 0%, #818cf8 50%, #f472b6 100%);
-  --gradient-soft: linear-gradient(135deg, rgba(94,234,212,0.12) 0%, rgba(129,140,248,0.12) 100%);
-  --grid-color: rgba(94, 234, 212, 0.05);
+  --shadow-glow: 0 0 24px rgba(244, 63, 94, 0.22);
+  --gradient: linear-gradient(135deg, #f43f5e 0%, #fb923c 50%, #fbbf24 100%);
+  --gradient-soft: linear-gradient(135deg, rgba(244,63,94,0.14) 0%, rgba(251,146,60,0.14) 100%);
+  --grid-color: rgba(244, 63, 94, 0.05);
   --noise: rgba(255,255,255,0.02);
 }
 :root[data-theme="light"] {
-  --bg-0: #f5f7fa;
+  --bg-0: #fbf6f7;
   --bg-1: #ffffff;
-  --bg-2: #eef2f7;
-  --bg-3: #e2e8f0;
-  --bg-4: #cbd5e1;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --text-1: #0f172a;
-  --text-2: #334155;
-  --text-3: #64748b;
-  --accent: #0d9488;
-  --accent-2: #6366f1;
-  --accent-3: #db2777;
+  --bg-2: #faeded;
+  --bg-3: #f4dde0;
+  --bg-4: #e8c4ca;
+  --border: #f1d5da;
+  --border-strong: #e5b9c0;
+  --text-1: #1a0e15;
+  --text-2: #4a2c38;
+  --text-3: #8b5a6a;
+  --accent: #be123c;
+  --accent-2: #ea580c;
+  --accent-3: #ca8a04;
   --success: #16a34a;
   --warning: #d97706;
   --danger: #dc2626;
   --info: #2563eb;
-  --shadow: 0 10px 30px rgba(15,20,30,0.08);
-  --shadow-glow: 0 0 18px rgba(13, 148, 136, 0.18);
-  --gradient: linear-gradient(135deg, #0d9488 0%, #6366f1 50%, #db2777 100%);
-  --gradient-soft: linear-gradient(135deg, rgba(13,148,136,0.08) 0%, rgba(99,102,241,0.08) 100%);
-  --grid-color: rgba(13, 148, 136, 0.06);
+  --shadow: 0 10px 30px rgba(190,18,60,0.08);
+  --shadow-glow: 0 0 18px rgba(190, 18, 60, 0.18);
+  --gradient: linear-gradient(135deg, #be123c 0%, #ea580c 50%, #ca8a04 100%);
+  --gradient-soft: linear-gradient(135deg, rgba(190,18,60,0.08) 0%, rgba(234,88,12,0.08) 100%);
+  --grid-color: rgba(190, 18, 60, 0.06);
   --noise: rgba(0,0,0,0.015);
 }
 
@@ -682,7 +682,10 @@ input, select, textarea { font-family: inherit; }
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
   animation: scanLine 2.4s linear infinite;
 }
-.searching-header { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 8px; }
+.searching-header {
+  display: flex; align-items: flex-start; gap: 18px;
+  margin-bottom: 8px;
+}
 .searching-icon {
   width: 56px; height: 56px;
   flex-shrink: 0;
@@ -691,7 +694,12 @@ input, select, textarea { font-family: inherit; }
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }
-.searching-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-top: 8px; }
+.searching-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
 .searching-svc {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px;
@@ -700,8 +708,14 @@ input, select, textarea { font-family: inherit; }
   border-radius: 10px;
   font-size: 0.86rem;
 }
-.searching-svc-name { flex: 1; min-width: 0; font-family: 'Space Grotesk', sans-serif; font-weight: 500; }
-.searching-svc-spinner { display: inline-flex; gap: 3px; }
+.searching-svc-name {
+  flex: 1; min-width: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+}
+.searching-svc-spinner {
+  display: inline-flex; gap: 3px;
+}
 .searching-dot {
   width: 5px; height: 5px;
   background: var(--accent);
@@ -1556,7 +1570,7 @@ input, select, textarea { font-family: inherit; }
         </svg>
       </div>
     </div>
-    <h2 data-i18n="login.title" style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">Intel-Hub</h2>
+    <h2 data-i18n="login.title" style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;">Phish-Hub</h2>
     <p data-i18n="login.sub" style="margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3);">Identity Intelligence Hub</p>
     <p data-i18n="login.subtitle" style="margin-top: 16px;">Inserisci la tua Master API Key per accedere alla piattaforma</p>
     <div class="field">
@@ -1591,8 +1605,8 @@ input, select, textarea { font-family: inherit; }
         </svg>
       </div>
       <div class="brand-text">
-        <span class="brand-name">Intel-Hub</span>
-        <span class="brand-sub">Identity Intelligence</span>
+        <span class="brand-name">Phish-Hub</span>
+        <span class="brand-sub">Email &amp; Phishing</span>
       </div>
     </div>
     <a class="nav-item" href="/" style="margin-bottom: 8px;"><i data-lucide="layout-grid"></i> <span data-i18n="nav.portal">Hub Portal</span></a>
@@ -1606,12 +1620,12 @@ input, select, textarea { font-family: inherit; }
     <div class="sidebar-footer">
       <div class="version-chip">
         <span class="version-dot"></span>
-        <span>v2.7</span>
+        <span>v1.0</span>
         <span class="version-sep">·</span>
-        <span>zero-import</span>
+        <span>phish-hub</span>
       </div>
       <div class="muted" style="font-size: 0.65rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">
-        OSINT · CTI · BREACH-DATA
+        EMAIL · PHISHING · DEFENDER
       </div>
     </div>
   </aside>
@@ -1631,11 +1645,11 @@ input, select, textarea { font-family: inherit; }
         <div class="avatar-floor"></div>
         <svg class="avatar-svg" viewBox="0 0 360 460" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <!-- Pink hair gradient -->
+            <!-- Crimson red hair gradient (Phish-Hub variant) -->
             <linearGradient id="skHair" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#ffd1e0"/>
-              <stop offset="40%" stop-color="#f8a5c8"/>
-              <stop offset="100%" stop-color="#e879a8"/>
+              <stop offset="0%" stop-color="#fda4af"/>
+              <stop offset="40%" stop-color="#f43f5e"/>
+              <stop offset="100%" stop-color="#9f1239"/>
             </linearGradient>
             <linearGradient id="skHairLight" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="#fff" stop-opacity="0.85"/>
@@ -1656,9 +1670,9 @@ input, select, textarea { font-family: inherit; }
             </radialGradient>
             <!-- Eyes -->
             <radialGradient id="skIris" cx="50%" cy="40%">
-              <stop offset="0%" stop-color="#fbcfe8"/>
-              <stop offset="50%" stop-color="#ec4899"/>
-              <stop offset="100%" stop-color="#9d174d"/>
+              <stop offset="0%" stop-color="#fef3c7"/>
+              <stop offset="50%" stop-color="#fb923c"/>
+              <stop offset="100%" stop-color="#7c2d12"/>
             </radialGradient>
             <!-- Blouse white -->
             <linearGradient id="skBlouse" x1="0" y1="0" x2="0" y2="1">
@@ -2004,8 +2018,8 @@ input, select, textarea { font-family: inherit; }
                 <span class="dot"></span>
                 <span data-i18n="hero.eyebrow">Live Intelligence Console</span>
               </div>
-              <h1><span data-i18n="hero.title.before">Aggrega </span><span class="grad" data-i18n="hero.title.gradient">Identity Intelligence</span><span data-i18n="hero.title.after"> da OSINT in tempo reale</span></h1>
-              <p data-i18n="hero.subtitle">Esegui un'unica query e correla i risultati da IntelX, HIBP, BreachDirectory e LeakIX. Analisi automatica generata da Claude.</p>
+              <h1><span data-i18n="hero.title.before">Investiga </span><span class="grad" data-i18n="hero.title.gradient">phishing &amp; sender</span><span data-i18n="hero.title.after"> in tempo reale</span></h1>
+              <p data-i18n="hero.subtitle">Reputation sender, email validation, posture DNS, URL detonation e threat correlation. A supporto delle investigazioni Defender for Office 365.</p>
               <div class="stat-grid">
                 <div class="stat-item">
                   <div class="stat-label" data-i18n="stat.queries">Query Sessione</div>
@@ -2015,12 +2029,12 @@ input, select, textarea { font-family: inherit; }
                 <div class="stat-item">
                   <div class="stat-label" data-i18n="stat.active">Connettori Attivi</div>
                   <div class="stat-value" id="statActive">0</div>
-                  <div class="stat-trend up" id="statActiveDelta" data-i18n="stat.active.sub">/ 4 disponibili</div>
+                  <div class="stat-trend up" id="statActiveDelta" data-i18n="stat.active.sub">/ 5 disponibili</div>
                 </div>
                 <div class="stat-item">
                   <div class="stat-label" data-i18n="stat.hits">Hit Totali</div>
                   <div class="stat-value" id="statHits">0</div>
-                  <div class="stat-trend" data-i18n="stat.hits.sub">leak + breach</div>
+                  <div class="stat-trend" data-i18n="stat.hits.sub">signals</div>
                 </div>
                 <div class="stat-item">
                   <div class="stat-label" data-i18n="stat.latency">Avg Latency</div>
@@ -2074,12 +2088,10 @@ input, select, textarea { font-family: inherit; }
                 <span data-i18n="search.type" style="display:block;font-size:0.82rem;color:var(--text-2);margin-bottom:6px;font-weight:500;">Tipo</span>
                 <select id="kwType" class="select">
                   <option value="email" data-i18n="search.type.email">Email</option>
-                  <option value="name" data-i18n="search.type.name">Nome/Cognome</option>
-                  <option value="phone" data-i18n="search.type.phone">Telefono</option>
                   <option value="domain" data-i18n="search.type.domain">Dominio</option>
-                  <option value="ip" data-i18n="search.type.ip">IP</option>
                   <option value="url" data-i18n="search.type.url">URL</option>
-                  <option value="password" data-i18n="search.type.password">Password</option>
+                  <option value="ip" data-i18n="search.type.ip">IP</option>
+                  <option value="hash" data-i18n="search.type.hash">Hash (MD5/SHA1/SHA256)</option>
                 </select>
               </label>
             </div>
@@ -2176,7 +2188,7 @@ input, select, textarea { font-family: inherit; }
           <div>
             <div class="section-eyebrow" style="margin-bottom: 4px;" data-i18n="persist.eyebrow">Persistence</div>
             <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.84rem;" id="persistStatus">○ Not saved</div>
-            <div class="muted" style="font-size: 0.78rem; margin-top: 4px;"><span data-i18n="persist.storageInfo">Storage: </span><code>localStorage[intelhub-config-v1]</code><span data-i18n="persist.encryptedWith"> · encrypted with PBKDF2(120k) + AES-GCM</span></div>
+            <div class="muted" style="font-size: 0.78rem; margin-top: 4px;"><span data-i18n="persist.storageInfo">Storage: </span><code>localStorage[phishhub-config-v1]</code><span data-i18n="persist.encryptedWith"> · encrypted with PBKDF2(120k) + AES-GCM</span></div>
           </div>
           <div class="row-flex" style="gap: 8px; flex-wrap: wrap;">
             <button class="btn btn-ghost btn-sm" id="exportBackupBtn"><i data-lucide="download"></i> <span data-i18n="persist.exportBtn">Export encrypted backup</span></button>
@@ -2254,7 +2266,7 @@ export default {
     ['host','origin','referer','cf-connecting-ip','cf-ipcountry','cf-ray','cf-visitor','x-forwarded-for','x-forwarded-proto','x-real-ip']
       .forEach(h => headers.delete(h));
     // Alcuni provider rifiutano richieste senza User-Agent
-    if (!headers.has('user-agent')) headers.set('user-agent', 'IntelHub-Proxy/1.0');
+    if (!headers.has('user-agent')) headers.set('user-agent', 'PhishHub-Proxy/1.0');
 
     let upstream;
     try {
@@ -2321,7 +2333,7 @@ app.all('*', async (req, res) => {
   const headers = { ...req.headers };
   ['host','connection','content-length','origin','referer','x-forwarded-for','x-forwarded-proto','x-forwarded-host','x-render-origin-server']
     .forEach(h => delete headers[h]);
-  if (!headers['user-agent']) headers['user-agent'] = 'IntelHub-Proxy/1.0';
+  if (!headers['user-agent']) headers['user-agent'] = 'PhishHub-Proxy/1.0';
 
   try {
     const upstream = await fetch(targetUrl.toString(), {
@@ -2347,20 +2359,7 @@ app.listen(PORT, () => console.log('IntelHub proxy on ' + PORT));</pre>
         </div>
 
         <div class="card">
-          <h3 data-i18n="config.osintKeys">OSINT services keys</h3>
-          <div class="field">
-            <label data-i18n="config.intelxTier">IntelX Tier</label>
-            <div class="row-flex" style="gap: 16px;">
-              <label class="check" style="cursor:pointer;">
-                <input type="radio" name="intelxTier" value="free" checked />
-                <span>Free (<code>free.intelx.io</code>)</span>
-              </label>
-              <label class="check" style="cursor:pointer;">
-                <input type="radio" name="intelxTier" value="paid" />
-                <span>Paid (<code>2.intelx.io</code>)</span>
-              </label>
-            </div>
-          </div>
+          <h3 data-i18n="config.osintKeys">Phishing & Email OSINT keys</h3>
           <div id="apiKeysForm"></div>
         </div>
 
@@ -2470,35 +2469,35 @@ const RECOVERY_EMAIL = 'samuel.ascone@gmail.com';
 // then committed here. Decrypted only with the right Master Key.
 // Per-user data (history, recent) stays in localStorage only.
 // Set to null to disable bundled config (require manual import).
-const BUNDLED_CONFIG_BLOB = {"v":2,"s":"/2ESMHu+oFLiJo6MlN7vYw==","i":"fPjJIJDeSNF2EBdR","c":"eFpm6M8f5LQ6vuMO0LBnQ5Sd4wxgXj5kp3EggWdiaKR2FRrHM7Rk6ARAgHUYsw10Vc7YaazprXzg6X5ARcjx9RBZJ/CvqnIcNJ/QNeQmsxrt87294uxEVcKyyOnkCRlWno2Uk7tCucF1kPYwHdlwJkRkt2rMLfPS9k4u0192VMzJuVSRp4QcwitlyVvyjQpior/CzyP6W7XvCNqOB/JoeefujAXsJrnKhK44h185dYV6dFfCEQ2ge/R7EhtICzyeDeGrHt2VRCItM4dLvdWZMOB4DZdn8MTlqM2qPV4mjtT07y8BeBPyKWH+w43wbX/ctGxGdy0IbqyM7fPlUzlgEsLGQKqwJkBRnTCh23M3DkXIjfnva/vdsxsaVxJEllk/DM7WTkCu2/hws7piDXJjwX06qITRpE/8udjVeAVxb98PkxPoWWviSUPs0AzQP0hNrjjtTg7tdRVFZ93TVNNS00+VQkXp/LCUzUT3SLtawChgQqj/o2/PqbRHxKHIrXfZAnq6vL3P8syUsM6usPuXlL331lcruVra/pQTuJABovizf80M+aHw1ydMx/JR94HKYuoZ8wqEeljsssnS6VSl7RY0xFbxRXJK1g=="};
+// Phish-Hub: bundle starts null. Once you configure Hunter/EmailRep/URLScan/VirusTotal keys
+// here, use Configuration → Generate bundle to bake them in (separately from Intel-Hub).
+const BUNDLED_CONFIG_BLOB = {"v":2,"s":"EVTKQ2HJR8twq8MlzkTr1Q==","i":"iX8zr+iOpA/70a26","c":"EnlGmzoyFlJzRuZpeCj5TqDJ1FdUwplkSPeh6VAqMu5936M0vzSb9snKNjM1wfhJJZ2ozM5WFcjAqrWb2QA6OsjExagKNWtb1uGAhXisWgA14BYs9qZP6tbWcLAFdBALajxhEGecwuga3nTpDzDc/9vaHXjhntZspgj1EYH1lbWnONLOZebo3tBwClnX47kctkTm56ZP/CD2L8rfoqCipaWP2/pLEnZjpl/92SOORvOtPhnw+tEdTr03c+ebKUvEGXY5Yz2WP1d2vRrQwp8g21NSz1dTnRWuUhvdRTlEluHlxtTEHV9jQ+RUCBI1SHqm/TCqsrCjVRRih+PiPH85qQTcWW826IJ6o1RkxJt+OEikUfot7ZeXZE+akE9O6Z4PjPm6C6MfbCX5lwA4Zka0qea0kI14eUcsb7sMIQuht4A8fi4EeveWaL/iPGoiZ0/4Jg7SJ9AcngMItD4k/A3QeeLow4rdlCR/aKN4anNJ1bQVvvgsGOm0yiB3gsqIxoraEAU42jbCW4mN+DdND6eZwZazmo8ppSSUbpI4ry8vzfxyRY4RonkBcM1tUw=="};
 
 // In-memory state
 const state = {
   authSession: null,
   apiKeys: {
-    intelx: '',
-    rapidapi: '',
-    leakix: '',
-    dehashedEmail: '',
-    dehashed: '',
+    hunter: '',
+    emailrep: '',     // optional (anonymous works ma con limite IP)
+    urlscan: '',
+    virustotal: '',
     anthropic: '',
     master: ''
   },
-  intelxTier: 'free',           // 'free' -> free.intelx.io, 'paid' -> 2.intelx.io
-  corsProxy: '',                 // utente deve impostare il proprio Cloudflare Worker
+  corsProxy: '',
   aiConsent: false,
   recent: [],
-  searchHistory: [],     // tutte le ricerche eseguite, in ordine cronologico (più recente in cima)
-  lastResults: null,     // alias dell'ultima entry (compatibilità)
-  searching: null,       // {kw, type, services, startedAt} mentre una query è in corso
+  searchHistory: [],
+  lastResults: null,
+  searching: null,    // {kw, type, services, startedAt} mentre una query è in corso
   rateUsage: {
-    intelx: 0,
-    hibp: 0,
-    breachdirectory: 0,
-    leakix: 0,
-    dehashed: 0
+    hunter: 0,
+    emailrep: 0,
+    doh: 0,
+    urlscan: 0,
+    virustotal: 0
   },
-  rateResetKeys: {} // {intelx: 'YYYY-MM-DD', breachdirectory: 'YYYY-MM'} per detect period rollover
+  rateResetKeys: {}
 };
 
 function periodKey(period) {
@@ -2560,21 +2559,20 @@ async function httpErr(res) {
 }
 
 const SERVICES = {
-  intelx: { name: 'IntelX', color: '#4f98a3', limit: 50, plan: 'Free', planKey: 'free', limitUnit: '/giorno', unitKey: 'day', resetPeriod: 'day', pricing: 'https://intelx.io/product' },
-  hibp: { name: 'HIBP Pwned Passwords', color: '#6daa45', limit: Infinity, plan: 'No-Auth', planKey: 'noauth', limitUnit: ' (k-anonymity)', unitKey: 'kanon', resetPeriod: 'never', pricing: 'https://haveibeenpwned.com/Passwords', noAuth: true },
-  breachdirectory: { name: 'BreachDirectory', color: '#fdab43', limit: 50, plan: 'Free (RapidAPI)', planKey: 'rapid', limitUnit: '/mese', unitKey: 'month', resetPeriod: 'month', pricing: 'https://rapidapi.com/rohan-patra/api/breachdirectory' },
-  leakix: { name: 'LeakIX', color: '#a86fdf', limit: 20000, plan: 'Free Researcher', planKey: 'researcher', limitUnit: '/account', unitKey: 'account', resetPeriod: 'never', pricing: 'https://leakix.net/auth/login' },
-  dehashed: { name: 'DeHashed', color: '#dd6974', limit: 5, plan: 'Paid only', planKey: 'paid', limitUnit: ' result/q', unitKey: 'query', resetPeriod: 'never', pricing: 'https://dehashed.com/pricing', paidOnly: true }
+  hunter:     { name: 'Hunter.io',  color: '#ff5722', limit: 25,    plan: 'Free',         planKey: 'free',       limitUnit: '/mese',     unitKey: 'month',   resetPeriod: 'month', pricing: 'https://hunter.io/pricing' },
+  emailrep:   { name: 'EmailRep',   color: '#06b6d4', limit: 50,    plan: 'No-Auth',      planKey: 'noauth',     limitUnit: '/giorno',   unitKey: 'day',     resetPeriod: 'day',   pricing: 'https://emailrep.io/key', noAuth: true },
+  doh:        { name: 'DNS Recon',  color: '#22c55e', limit: Infinity, plan: 'No-Auth',   planKey: 'noauth',     limitUnit: ' (DoH)',    unitKey: 'kanon',   resetPeriod: 'never', pricing: 'https://developers.google.com/speed/public-dns/docs/doh', noAuth: true },
+  urlscan:    { name: 'URLScan.io', color: '#a855f7', limit: 5000,  plan: 'Free',         planKey: 'free',       limitUnit: '/mese',     unitKey: 'month',   resetPeriod: 'month', pricing: 'https://urlscan.io/pricing/' },
+  virustotal: { name: 'VirusTotal', color: '#ef4444', limit: 500,   plan: 'Free Public',  planKey: 'free',       limitUnit: '/giorno',   unitKey: 'day',     resetPeriod: 'day',   pricing: 'https://www.virustotal.com/gui/sign-in' }
 };
 
 const TYPE_TO_SERVICES = {
-  email:    ['intelx','breachdirectory','dehashed'],
-  name:     ['intelx','dehashed'],
-  phone:    ['intelx','breachdirectory','dehashed'],
-  domain:   ['intelx','breachdirectory','leakix','dehashed'],
-  ip:       ['intelx','breachdirectory','leakix','dehashed'],
-  url:      ['intelx','leakix'],
-  password: ['hibp']
+  email:    ['hunter','emailrep','virustotal'],
+  domain:   ['hunter','doh','virustotal','urlscan'],
+  url:      ['urlscan','virustotal'],
+  ip:       ['virustotal','doh'],
+  hash:     ['virustotal'],
+  headers:  []  // header analyzer modulo locale, no remote connectors
 };
 
 /* ============ i18n ============ */
@@ -2592,8 +2590,8 @@ const I18N = {
     'topbar.results': 'Results',
     'topbar.limits': 'Rate Limits',
     'topbar.config': 'Configuration',
-    'login.title': 'Intel-Hub',
-    'login.sub': 'Identity Intelligence Hub',
+    'login.title': 'Phish-Hub',
+    'login.sub': 'Email &amp; Phishing OSINT',
     'login.subtitle': 'Enter your Master API Key to access the platform',
     'login.label': 'Master API Key',
     'login.btn': 'Sign In',
@@ -2601,16 +2599,25 @@ const I18N = {
     'login.disclaimer': 'Service API Keys are encrypted (AES-GCM) in localStorage with the Master Key as passphrase. Persisted across sessions. Master Key and results are never saved.',
     'login.forgot': 'Forgot Master Key?',
     'hero.eyebrow': 'Live Intelligence Console',
-    'hero.title.before': 'Aggregate ',
-    'hero.title.gradient': 'Identity Intelligence',
-    'hero.title.after': ' from OSINT in real time',
-    'hero.subtitle': 'Run a single query and correlate results from IntelX, HIBP, BreachDirectory and LeakIX. Automatic analysis powered by Claude.',
+    'hero.title.before': 'Investigate ',
+    'hero.title.gradient': 'phishing & sender',
+    'hero.title.after': ' in real time',
+    'hero.subtitle': 'Sender reputation, email validation, DNS posture audit, URL detonation and threat correlation. Built to support Defender for Office 365 investigations.',
     'stat.queries': 'Session Queries',
     'stat.queries.sub': 'in-memory',
     'stat.active': 'Active Connectors',
-    'stat.active.sub': '/ 4 available',
+    'stat.active.sub': '/ 5 available',
+    'config.status.ok': 'Configured ✅',
+    'validate.empty': 'Enter a keyword.',
+    'validate.email': 'Invalid email.',
+    'validate.ip': 'Invalid IP address.',
+    'validate.domain': 'Invalid domain (missing TLD).',
+    'validate.url': 'URL must start with http:// or https://',
+    'validate.hash': 'Invalid hash (expected MD5/SHA1/SHA256).',
+    'validate.headers': 'Paste full email headers (Received, From, etc.).',
+    'config.status.missing': 'Not configured ⚠️',
     'stat.hits': 'Total Hits',
-    'stat.hits.sub': 'leak + breach',
+    'stat.hits.sub': 'signals',
     'stat.latency': 'Avg Latency',
     'stat.latency.sub': 'via proxy',
     'search.eyebrow': 'Query Builder',
@@ -2625,6 +2632,7 @@ const I18N = {
     'search.type.ip': 'IP',
     'search.type.url': 'URL',
     'search.type.password': 'Password',
+    'search.type.hash': 'Hash (MD5/SHA1/SHA256)',
     'search.services': 'Active services',
     'search.run': 'Run Search',
     'search.running': 'Searching...',
@@ -2663,16 +2671,6 @@ const I18N = {
     'config.osintKeys': 'OSINT services keys',
     'config.intelxTier': 'IntelX Tier',
     'config.aiSection': 'AI Analysis (Claude)',
-    'config.status.ok': 'Configured ✅',
-    'validate.empty': 'Enter a keyword.',
-    'validate.email': 'Invalid email.',
-    'validate.ip': 'Invalid IP address.',
-    'validate.domain': 'Invalid domain (missing TLD).',
-    'validate.phone': 'Phone not in E.164 format.',
-    'validate.url': 'URL must start with http:// or https://',
-    'validate.name.tooShort': 'Enter first and last name (min 2 words).',
-    'validate.name.onlyAlpha': 'Only alphabetic characters allowed.',
-    'config.status.missing': 'Not configured ⚠️',
     'config.aiConsent': 'I consent to sending raw aggregated data to Claude (Anthropic) for analysis.',
     'config.soarTitle': 'External integration (Cortex SOAR)',
     'config.soarDesc': 'Use the URL below to call the app from Cortex SOAR or other SIEM/SOAR tools. The Master API Key is validated client-side via SHA-256.',
@@ -2691,7 +2689,7 @@ const I18N = {
     'persist.importBtn': 'Import backup',
     'persist.exportEmpty': 'Nothing to export yet — enter at least one config first.',
     'persist.exportOk': 'Backup file downloaded.',
-    'persist.importPick': 'Pick a backup file (.intelhub-backup.json)',
+    'persist.importPick': 'Pick a backup file (.phishhub-backup.json)',
     'persist.importOk': 'Backup imported. Reload the page and login with the same Master Key used to create it.',
     'persist.importErr': 'Invalid or corrupted backup file.',
     'cors.title': 'CORS Proxy (optional but recommended)',
@@ -2838,8 +2836,8 @@ const I18N = {
     'topbar.results': 'Risultati',
     'topbar.limits': 'Rate Limits',
     'topbar.config': 'Configurazione',
-    'login.title': 'Intel-Hub',
-    'login.sub': 'Identity Intelligence Hub',
+    'login.title': 'Phish-Hub',
+    'login.sub': 'Email &amp; Phishing OSINT',
     'login.subtitle': 'Inserisci la tua Master API Key per accedere alla piattaforma',
     'login.label': 'Master API Key',
     'login.btn': 'Accedi',
@@ -2847,16 +2845,25 @@ const I18N = {
     'login.disclaimer': 'Le API Key dei servizi sono cifrate (AES-GCM) in localStorage con la Master Key come passphrase. Persistite tra sessioni. Master Key e risultati non vengono mai salvati.',
     'login.forgot': 'Master Key dimenticata?',
     'hero.eyebrow': 'Live Intelligence Console',
-    'hero.title.before': 'Aggrega ',
-    'hero.title.gradient': 'Identity Intelligence',
-    'hero.title.after': ' da OSINT in tempo reale',
+    'hero.title.before': 'Investiga ',
+    'hero.title.gradient': 'phishing & sender',
+    'hero.title.after': ' in tempo reale',
     'hero.subtitle': "Esegui un'unica query e correla i risultati da IntelX, HIBP, BreachDirectory e LeakIX. Analisi automatica generata da Claude.",
     'stat.queries': 'Query Sessione',
     'stat.queries.sub': 'in-memory',
     'stat.active': 'Connettori Attivi',
-    'stat.active.sub': '/ 4 disponibili',
+    'stat.active.sub': '/ 5 disponibili',
+    'config.status.ok': 'Configurata ✅',
+    'validate.empty': 'Inserisci una keyword.',
+    'validate.email': 'Email non valida.',
+    'validate.ip': 'Indirizzo IP non valido.',
+    'validate.domain': 'Dominio non valido (manca TLD).',
+    'validate.url': 'URL deve iniziare con http:// o https://',
+    'validate.hash': 'Hash non valido (atteso MD5/SHA1/SHA256).',
+    'validate.headers': 'Incolla header email completi (Received, From, ecc.).',
+    'config.status.missing': 'Non configurata ⚠️',
     'stat.hits': 'Hit Totali',
-    'stat.hits.sub': 'leak + breach',
+    'stat.hits.sub': 'segnali',
     'stat.latency': 'Avg Latency',
     'stat.latency.sub': 'via proxy',
     'search.eyebrow': 'Query Builder',
@@ -2871,6 +2878,7 @@ const I18N = {
     'search.type.ip': 'IP',
     'search.type.url': 'URL',
     'search.type.password': 'Password',
+    'search.type.hash': 'Hash (MD5/SHA1/SHA256)',
     'search.services': 'Servizi attivi',
     'search.run': 'Avvia Ricerca',
     'search.running': 'Ricerca in corso...',
@@ -2909,16 +2917,6 @@ const I18N = {
     'config.osintKeys': 'Chiavi servizi OSINT',
     'config.intelxTier': 'IntelX Tier',
     'config.aiSection': 'AI Analysis (Claude)',
-    'config.status.ok': 'Configurata ✅',
-    'validate.empty': 'Inserisci una keyword.',
-    'validate.email': 'Email non valida.',
-    'validate.ip': 'Indirizzo IP non valido.',
-    'validate.domain': 'Dominio non valido (manca TLD).',
-    'validate.phone': 'Telefono non in formato E.164.',
-    'validate.url': 'URL deve iniziare con http:// o https://',
-    'validate.name.tooShort': 'Inserisci nome e cognome (min 2 parole).',
-    'validate.name.onlyAlpha': 'Solo caratteri alfabetici.',
-    'config.status.missing': 'Non configurata ⚠️',
     'config.aiConsent': "Acconsento all'invio dei dati grezzi aggregati a Claude (Anthropic) per l'analisi.",
     'config.soarTitle': 'Integrazione esterna (Cortex SOAR)',
     'config.soarDesc': "Usa la URL seguente per richiamare l'app da Cortex SOAR o altri strumenti SIEM/SOAR. La Master API Key viene validata client-side via SHA-256.",
@@ -2937,7 +2935,7 @@ const I18N = {
     'persist.importBtn': 'Importa backup',
     'persist.exportEmpty': 'Niente da esportare ancora — configura almeno una chiave prima.',
     'persist.exportOk': 'File di backup scaricato.',
-    'persist.importPick': 'Scegli file di backup (.intelhub-backup.json)',
+    'persist.importPick': 'Scegli file di backup (.phishhub-backup.json)',
     'persist.importOk': 'Backup importato. Ricarica la pagina ed effettua il login con la stessa Master Key usata per crearlo.',
     'persist.importErr': 'File di backup non valido o corrotto.',
     'cors.title': 'CORS Proxy (opzionale ma consigliato)',
@@ -3073,7 +3071,7 @@ const I18N = {
   }
 };
 
-let currentLang = (localStorage.getItem('intelhub-lang') === 'it') ? 'it' : 'en';
+let currentLang = (localStorage.getItem('phishhub-lang') === 'it') ? 'it' : 'en';
 function t(key) { return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key; }
 function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -3092,7 +3090,7 @@ function applyTranslations() {
 }
 function setLang(lang) {
   currentLang = lang;
-  localStorage.setItem('intelhub-lang', lang);
+  localStorage.setItem('phishhub-lang', lang);
   applyTranslations();
   // Re-render dynamic content that depends on language
   if (state.authSession) {
@@ -3127,7 +3125,7 @@ async function sha1(str) {
 }
 
 /* ============ Encrypted persistence ============ */
-const STORAGE_KEY = 'intelhub-config-v1';
+const STORAGE_KEY = 'phishhub-config-v1';
 // PBKDF2 iter count by blob version. v=1 legacy (120k), v=2 hardened (600k).
 const PBKDF2_ITER = { 1: 120000, 2: 600000 };
 const CURRENT_BLOB_VERSION = 2;
@@ -3188,7 +3186,7 @@ async function persistConfig() {
     }));
     const payload = {
       apiKeys: { ...state.apiKeys, master: '' },
-      intelxTier: state.intelxTier,
+      
       corsProxy: state.corsProxy,
       aiConsent: state.aiConsent,
       searchHistory: histSlim,
@@ -3231,7 +3229,7 @@ async function loadPersistedConfig(masterKey) {
 
 function _applyDecryptedData(data, masterKey) {
   if (data.apiKeys) state.apiKeys = { ...state.apiKeys, ...data.apiKeys, master: masterKey };
-  if (data.intelxTier) state.intelxTier = data.intelxTier;
+  
   if (typeof data.corsProxy === 'string') state.corsProxy = data.corsProxy;
   if (typeof data.aiConsent === 'boolean') state.aiConsent = data.aiConsent;
   if (Array.isArray(data.searchHistory)) {
@@ -3311,156 +3309,205 @@ function validate(kw, type) {
     case 'domain':
       if (!/^([a-z0-9-]+\.)+[a-z]{2,}$/i.test(kw)) return t('validate.domain');
       break;
-    case 'phone':
-      if (!/^\+?[1-9]\d{6,14}$/.test(kw.replace(/\s/g,''))) return t('validate.phone');
-      break;
     case 'url':
       if (!/^https?:\/\/.+/i.test(kw)) return t('validate.url');
       break;
-    case 'name':
-      const parts = kw.trim().split(/\s+/);
-      if (parts.length < 2) return t('validate.name.tooShort');
-      if (!parts.every(p => /^[\p{L}'-]+$/u.test(p))) return t('validate.name.onlyAlpha');
+    case 'hash':
+      if (!/^[a-f0-9]{32}$|^[a-f0-9]{40}$|^[a-f0-9]{64}$/i.test(kw)) return t('validate.hash');
+      break;
+    case 'headers':
+      if (kw.length < 20) return t('validate.headers');
       break;
   }
   return null;
 }
 
 /* ============ Connectors ============ */
-async function callIntelX(kw, type) {
-  const key = state.apiKeys.intelx;
-  if (!key) return { service: 'intelx', status: 'not-configured', data: null, error: 'API Key IntelX non configurata.' };
-  incRate("intelx");
-  const base = state.intelxTier === 'paid' ? 'https://2.intelx.io' : 'https://free.intelx.io';
-  try {
-    const searchRes = await fetchTimeout(proxied(`${base}/intelligent/search`), {
-      method: 'POST',
-      headers: { 'x-key': key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ term: kw, maxresults: 10, media: 0, target: 0 })
-    }, 20000);
-    if (!searchRes.ok) throw new Error(await httpErr(searchRes));
-    const searchData = await searchRes.json();
-    if (!searchData.id) return { service: 'intelx', status: 'success', data: { results: [] }, count: 0 };
-
-    // Polling: free tier richiede tempo per popolare i risultati. status=0 = ancora in elaborazione, status=1 = no more results, status=2 = errore
-    let records = [];
-    for (let attempt = 0; attempt < 6; attempt++) {
-      await new Promise(r => setTimeout(r, 1500));
-      const resultRes = await fetchTimeout(proxied(`${base}/intelligent/search/result?id=${encodeURIComponent(searchData.id)}&limit=10&statistics=0&previewlines=8`), {
-        headers: { 'x-key': key }
-      }, 15000);
-      if (!resultRes.ok) throw new Error(await httpErr(resultRes));
-      const resultData = await resultRes.json();
-      records = resultData.records || [];
-      if (resultData.status === 1 || records.length >= 10) break; // finito o abbiamo abbastanza
-      if (resultData.status === 2) break; // errore upstream, esci
-    }
-
-    return { service: 'intelx', status: 'success', count: records.length, data: { results: records.map(r => ({
-      source: r.bucket || r.bucketh || 'intelx',
-      name: r.name,
-      date: r.added,
-      preview: r.description || r.name,
-      type: r.type
-    })) } };
-  } catch (e) {
-    const msg = e.name === 'AbortError' ? 'Timeout (>20s) — free tier IntelX a volte è molto lento o blocca IP cloud' : (e.message || 'Errore sconosciuto');
-    const cors = /Failed to fetch|NetworkError/i.test(msg);
-    return { service: 'intelx', status: 'error', error: msg, cors };
-  }
-}
-
-async function callHIBP(kw) {
-  incRate("hibp");
-  try {
-    const hash = await sha1(kw);
-    const prefix = hash.slice(0, 5);
-    const suffix = hash.slice(5);
-    const res = await fetchTimeout(proxied(`https://api.pwnedpasswords.com/range/${prefix}`));
-    if (!res.ok) throw new Error(await httpErr(res));
-    const text = await res.text();
-    const lines = text.split('\n');
-    let count = 0;
-    for (const line of lines) {
-      const [s, c] = line.trim().split(':');
-      if (s === suffix) { count = parseInt(c, 10); break; }
-    }
-    return { service: 'hibp', status: 'success', count: count > 0 ? 1 : 0, data: { found: count > 0, occurrences: count, message: count > 0 ? `Password trovata ${count.toLocaleString('it')} volte nei database di breach.` : 'Non trovata in alcun breach noto.' } };
-  } catch (e) {
-    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
-    return { service: 'hibp', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
-  }
-}
-
-async function callBreachDirectory(kw) {
-  const key = state.apiKeys.rapidapi;
-  if (!key) return { service: 'breachdirectory', status: 'not-configured', error: 'RapidAPI Key non configurata.' };
-  incRate("breachdirectory");
-  try {
-    const res = await fetchTimeout(proxied(`https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(kw)}`), {
-      headers: {
-        'X-RapidAPI-Key': key,
-        'X-RapidAPI-Host': 'breachdirectory.p.rapidapi.com'
-      }
-    });
-    if (!res.ok) throw new Error(await httpErr(res));
-    const data = await res.json();
-    return { service: 'breachdirectory', status: 'success', count: data.found ? (data.result || []).length : 0, data };
-  } catch (e) {
-    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
-    return { service: 'breachdirectory', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
-  }
-}
-
-async function callLeakIX(kw, type) {
-  const key = state.apiKeys.leakix;
-  if (!key) return { service: 'leakix', status: 'not-configured', error: 'LeakIX API Key non configurata.' };
-  incRate("leakix");
+/* ============ Hunter.io — email finder + verifier per dominio ============ */
+async function callHunter(kw, type) {
+  const key = state.apiKeys.hunter;
+  if (!key) return { service: 'hunter', status: 'not-configured', error: 'Hunter.io API Key non configurata.' };
+  incRate('hunter');
   try {
     let url;
-    if (type === 'ip' || type === 'domain') {
-      url = `https://leakix.net/host/${encodeURIComponent(kw)}`;
+    if (type === 'email') {
+      url = `https://api.hunter.io/v2/email-verifier?email=${encodeURIComponent(kw)}&api_key=${encodeURIComponent(key)}`;
+    } else if (type === 'domain') {
+      url = `https://api.hunter.io/v2/domain-search?domain=${encodeURIComponent(kw)}&limit=10&api_key=${encodeURIComponent(key)}`;
     } else {
-      url = `https://leakix.net/search?q=${encodeURIComponent(kw)}&scope=leak`;
+      return { service: 'hunter', status: 'success', count: 0, data: { skipped: true } };
     }
-    const res = await fetchTimeout(proxied(url), {
-      headers: { 'api-key': key, 'Accept': 'application/json' }
-    });
+    const res = await fetchTimeout(proxied(url));
     if (!res.ok) throw new Error(await httpErr(res));
-    const data = await res.json();
-    const items = Array.isArray(data) ? data : (data.Leaks || data.Services || []);
-    return { service: 'leakix', status: 'success', count: items.length, data: { items } };
+    const json = await res.json();
+    const data = json.data || {};
+    let count = 0;
+    if (type === 'email') {
+      // verifier: result includes status, score, sources
+      count = data.status === 'valid' ? 1 : 0;
+    } else {
+      count = (data.emails || []).length;
+    }
+    return { service: 'hunter', status: 'success', count, data };
   } catch (e) {
     const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
-    return { service: 'leakix', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
+    return { service: 'hunter', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
   }
 }
 
-async function callDeHashed(kw) {
-  const email = state.apiKeys.dehashedEmail;
-  const key = state.apiKeys.dehashed;
-  if (!email || !key) return { service: 'dehashed', status: 'not-configured', error: 'Email + API Key DeHashed non configurate.' };
-  incRate("dehashed");
+/* ============ EmailRep — reputation + linked profiles ============ */
+async function callEmailRep(kw) {
+  // EmailRep: API Key opzionale (50/giorno IP-based senza key, di più con key)
+  incRate('emailrep');
+  const key = state.apiKeys.emailrep;
   try {
-    const auth = btoa(`${email}:${key}`);
-    const res = await fetchTimeout(proxied(`https://api.dehashed.com/search?query=${encodeURIComponent(kw)}`), {
-      headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' }
-    });
+    const headers = { 'Accept': 'application/json', 'User-Agent': 'PhishHub/1.0' };
+    if (key) headers['Key'] = key;
+    const res = await fetchTimeout(proxied(`https://emailrep.io/${encodeURIComponent(kw)}`), { headers });
     if (!res.ok) throw new Error(await httpErr(res));
     const data = await res.json();
-    return { service: 'dehashed', status: 'success', count: data.total || (data.entries || []).length, data };
+    // count = numero di profili o segnali rilevati
+    const profiles = (data.details && data.details.profiles) || [];
+    const suspicious = data.suspicious === true ? 1 : 0;
+    const count = profiles.length + suspicious;
+    return { service: 'emailrep', status: 'success', count, data };
   } catch (e) {
     const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
-    return { service: 'dehashed', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
+    return { service: 'emailrep', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
+  }
+}
+
+/* ============ DNS Recon (Google DoH) — MX/SPF/DKIM/DMARC/A ============ */
+async function callDoH(kw, type) {
+  // Domain o IP. Per email, estrai dominio.
+  let domain = kw;
+  if (type === 'email' && kw.includes('@')) domain = kw.split('@')[1];
+  if (type === 'url') {
+    try { domain = new URL(kw).hostname; } catch (e) {}
+  }
+  if (!domain) return { service: 'doh', status: 'success', count: 0, data: { skipped: true } };
+  incRate('doh');
+  const recordTypes = ['A','AAAA','MX','TXT'];
+  const records = {};
+  try {
+    for (const rt of recordTypes) {
+      const url = `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${rt}`;
+      const res = await fetchTimeout(proxied(url), { headers: { 'Accept': 'application/dns-json' } }, 10000);
+      if (!res.ok) continue;
+      const json = await res.json();
+      records[rt] = (json.Answer || []).map(a => a.data);
+    }
+    // Estrai SPF, DMARC, DKIM dai TXT
+    const txts = records.TXT || [];
+    const spf = txts.find(t => /v=spf1/i.test(t)) || null;
+    const dmarc_url = `https://dns.google/resolve?name=_dmarc.${encodeURIComponent(domain)}&type=TXT`;
+    let dmarc = null;
+    try {
+      const dr = await fetchTimeout(proxied(dmarc_url), {}, 8000);
+      if (dr.ok) {
+        const dj = await dr.json();
+        const dt = (dj.Answer || []).map(a => a.data).find(t => /v=DMARC1/i.test(t));
+        if (dt) dmarc = dt;
+      }
+    } catch (e) {}
+    const findings = [];
+    if (records.MX?.length) findings.push({ type: 'MX', count: records.MX.length });
+    if (spf) findings.push({ type: 'SPF', value: spf });
+    if (dmarc) findings.push({ type: 'DMARC', value: dmarc });
+    if (!spf) findings.push({ type: 'SPF_MISSING', risk: 'high' });
+    if (!dmarc) findings.push({ type: 'DMARC_MISSING', risk: 'high' });
+    const count = findings.length;
+    return { service: 'doh', status: 'success', count, data: { domain, records, spf, dmarc, findings } };
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
+    return { service: 'doh', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
+  }
+}
+
+/* ============ URLScan.io — submit + retrieve scan ============ */
+async function callURLScan(kw, type) {
+  const key = state.apiKeys.urlscan;
+  if (!key) return { service: 'urlscan', status: 'not-configured', error: 'URLScan.io API Key non configurata.' };
+  incRate('urlscan');
+  // Per type==='url' submit; per 'domain' search; per 'ip' search
+  try {
+    if (type === 'url') {
+      // Submit + poll result
+      const submitRes = await fetchTimeout(proxied('https://urlscan.io/api/v1/scan/'), {
+        method: 'POST',
+        headers: { 'API-Key': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: kw, visibility: 'unlisted' })
+      }, 20000);
+      if (!submitRes.ok) throw new Error(await httpErr(submitRes));
+      const sub = await submitRes.json();
+      // Polling result (max 30s)
+      let result = null;
+      for (let i = 0; i < 6; i++) {
+        await new Promise(r => setTimeout(r, 5000));
+        const r = await fetchTimeout(proxied(sub.api), {}, 15000);
+        if (r.ok) { result = await r.json(); break; }
+      }
+      return { service: 'urlscan', status: 'success', count: result ? 1 : 0, data: { submission: sub, result } };
+    } else {
+      // Search by domain/ip
+      const q = type === 'ip' ? `ip:${kw}` : `domain:${kw}`;
+      const url = `https://urlscan.io/api/v1/search/?q=${encodeURIComponent(q)}&size=10`;
+      const res = await fetchTimeout(proxied(url), { headers: { 'API-Key': key } });
+      if (!res.ok) throw new Error(await httpErr(res));
+      const data = await res.json();
+      const results = data.results || [];
+      return { service: 'urlscan', status: 'success', count: results.length, data: { results } };
+    }
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
+    return { service: 'urlscan', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
+  }
+}
+
+/* ============ VirusTotal — domain/ip/url/hash reputation ============ */
+async function callVirusTotal(kw, type) {
+  const key = state.apiKeys.virustotal;
+  if (!key) return { service: 'virustotal', status: 'not-configured', error: 'VirusTotal API Key non configurata.' };
+  incRate('virustotal');
+  try {
+    let endpoint;
+    if (type === 'domain') {
+      endpoint = `https://www.virustotal.com/api/v3/domains/${encodeURIComponent(kw)}`;
+    } else if (type === 'ip') {
+      endpoint = `https://www.virustotal.com/api/v3/ip_addresses/${encodeURIComponent(kw)}`;
+    } else if (type === 'url') {
+      const id = btoa(kw).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      endpoint = `https://www.virustotal.com/api/v3/urls/${id}`;
+    } else if (type === 'hash') {
+      endpoint = `https://www.virustotal.com/api/v3/files/${encodeURIComponent(kw)}`;
+    } else if (type === 'email') {
+      // VT non ha endpoint email diretto, usa il dominio
+      const dom = kw.includes('@') ? kw.split('@')[1] : kw;
+      endpoint = `https://www.virustotal.com/api/v3/domains/${encodeURIComponent(dom)}`;
+    } else {
+      return { service: 'virustotal', status: 'success', count: 0, data: { skipped: true } };
+    }
+    const res = await fetchTimeout(proxied(endpoint), {
+      headers: { 'x-apikey': key, 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error(await httpErr(res));
+    const json = await res.json();
+    const stats = json.data?.attributes?.last_analysis_stats || {};
+    const malicious = stats.malicious || 0;
+    const suspicious = stats.suspicious || 0;
+    return { service: 'virustotal', status: 'success', count: malicious + suspicious, data: json.data };
+  } catch (e) {
+    const msg = e.name === 'AbortError' ? 'Timeout' : (e.message || 'Errore');
+    return { service: 'virustotal', status: 'error', error: msg, cors: /Failed to fetch/i.test(msg) };
   }
 }
 
 const CONNECTORS = {
-  intelx: callIntelX,
-  hibp: callHIBP,
-  breachdirectory: callBreachDirectory,
-  leakix: callLeakIX,
-  dehashed: callDeHashed
+  hunter: callHunter,
+  emailrep: callEmailRep,
+  doh: callDoH,
+  urlscan: callURLScan,
+  virustotal: callVirusTotal
 };
 
 /* ============ AI Analysis (Claude) ============ */
@@ -3470,46 +3517,52 @@ async function callClaude(kw, type, results) {
   if (!state.aiConsent) return { error: 'Consenso AI non fornito. Abilita il toggle in Configurazione.' };
 
   const SYSTEM_PROMPTS = {
-    it: `Sei un analista di Cyber Threat Intelligence specializzato in Identity Intelligence.
-Ricevi dati grezzi aggregati da più piattaforme OSINT (IntelX, HIBP, BreachDirectory, LeakIX, DeHashed).
+    it: `Sei un analista di Phishing & Email Forensics a supporto di un SOC che usa Microsoft Defender for Office 365.
+Ricevi dati grezzi aggregati da Hunter.io, EmailRep, DNS Recon (DoH), URLScan.io e VirusTotal.
 Il tuo compito è:
-1. Sintetizzare i risultati in un report professionale **in italiano**
-2. Identificare i pattern più rilevanti (quali breach, quante volte esposto, su quali piattaforme)
-3. Per ogni finding, **evidenziare la data di occorrenza del breach o del ritrovamento sul Dark Web** se presente nei dati grezzi: è un'informazione critica per valutare la rilevanza
-4. Valutare il livello di rischio: BASSO / MEDIO / ALTO / CRITICO con motivazione, considerando anche la freschezza dei dati
-5. Fornire raccomandazioni operative immediate
-6. Evidenziare eventuali correlazioni tra i risultati dei diversi servizi
-Formato output: markdown strutturato con sezioni chiare. **Tutto il report deve essere in italiano.**`,
-    en: `You are a Cyber Threat Intelligence analyst specializing in Identity Intelligence.
-You receive raw aggregated data from multiple OSINT platforms (IntelX, HIBP, BreachDirectory, LeakIX, DeHashed).
+1. Produrre un report professionale **in italiano** strutturato in markdown
+2. Determinare un giudizio di rischio: BENIGNO / SOSPETTO / PROBABILMENTE MALEVOLO / CONFERMATO MALEVOLO con motivazione
+3. Per i sender (email): valutare reputation EmailRep + validity Hunter + correlazione con domain DNS posture (SPF/DKIM/DMARC) + reputation VirusTotal
+4. Per i domini: valutare DNS authentication (mancanza SPF/DMARC è red flag), VT detection, presenza in URLScan / blacklist, age implicita
+5. Per gli URL: valutare submission URLScan (screenshot, redirect chain, certificati), VT detection, host reputation
+6. Per gli IP: VT detection, ASN/country, presenza in scan history maliziosi
+7. Per i hash: VT detection ratio, family classification se presente
+8. Fornire raccomandazioni operative immediate per il SOC: BLOCK / QUARANTINE / ALLOW + ticket Defender + IOC da aggiungere a blocklist
+9. Evidenziare correlazioni cross-source (es. "stesso ASN di altri 12 phishing scan recenti su URLScan")
+Output: markdown strutturato. **Tutto in italiano.**`,
+    en: `You are a Phishing & Email Forensics analyst supporting a SOC that uses Microsoft Defender for Office 365.
+You receive raw aggregated data from Hunter.io, EmailRep, DNS Recon (DoH), URLScan.io and VirusTotal.
 Your task is to:
-1. Synthesize the results into a professional report **in English**
-2. Identify the most relevant patterns (which breaches, how many times exposed, on which platforms)
-3. For each finding, **highlight the breach occurrence date or Dark Web discovery date** if present in the raw data: this is critical information to assess relevance
-4. Assess the risk level: LOW / MEDIUM / HIGH / CRITICAL with reasoning, also considering data freshness
-5. Provide immediate operational recommendations
-6. Highlight any correlations between results from different services
-Output format: structured markdown with clear sections. **The entire report must be in English.**`
+1. Produce a professional report **in English** structured in markdown
+2. Determine a risk verdict: BENIGN / SUSPICIOUS / LIKELY MALICIOUS / CONFIRMED MALICIOUS with reasoning
+3. For senders (emails): assess EmailRep reputation + Hunter validity + correlation with domain DNS posture (SPF/DKIM/DMARC) + VirusTotal reputation
+4. For domains: assess DNS authentication (missing SPF/DMARC is a red flag), VT detection, presence in URLScan / blacklists, implicit age
+5. For URLs: assess URLScan submission (screenshot, redirect chain, certificates), VT detection, host reputation
+6. For IPs: VT detection, ASN/country, presence in malicious scan history
+7. For hashes: VT detection ratio, family classification if present
+8. Provide immediate SOC operational recommendations: BLOCK / QUARANTINE / ALLOW + Defender ticket + IOC to add to blocklist
+9. Highlight cross-source correlations (e.g. "same ASN as 12 other recent phishing scans on URLScan")
+Output: structured markdown. **All in English.**`
   };
   const systemPrompt = SYSTEM_PROMPTS[currentLang] || SYSTEM_PROMPTS.en;
 
   const USER_PROMPTS = {
-    it: `Keyword analizzata: "${kw}" (tipo: ${type})
+    it: `Indicatore analizzato: "${kw}" (tipo: ${type})
 
-Dati grezzi aggregati:
+Dati grezzi aggregati dai connettori:
 \`\`\`json
 ${JSON.stringify(results, null, 2)}
 \`\`\`
 
-Genera il report Identity Intelligence completo. Ricorda: per ogni risultato menzionato esplicitamente cita la data di occorrenza/ritrovamento (es. "Breach del 2023-08-14, ritrovato il...") quando disponibile.`,
-    en: `Analyzed keyword: "${kw}" (type: ${type})
+Genera il report di Phishing/Email Forensics completo. Includi sempre: verdetto di rischio, IOC primari, raccomandazioni Defender (block/quarantine/allow + reasoning), eventuali correlazioni.`,
+    en: `Analyzed indicator: "${kw}" (type: ${type})
 
-Raw aggregated data:
+Raw aggregated connector data:
 \`\`\`json
 ${JSON.stringify(results, null, 2)}
 \`\`\`
 
-Generate the complete Identity Intelligence report. Remember: for every cited result, explicitly mention the occurrence/discovery date (e.g. "Breach from 2023-08-14, discovered on...") when available.`
+Generate the complete Phishing/Email Forensics report. Always include: risk verdict, primary IOCs, Defender recommendations (block/quarantine/allow + reasoning), correlations if any.`
   };
   const userMsg = USER_PROMPTS[currentLang] || USER_PROMPTS.en;
 
@@ -3797,7 +3850,7 @@ const Avatar = (() => {
       if (!Config.stageEl) return;
 
       // Choose renderer: forced (user pref) or first available by priority
-      const forced = Config.forceRenderer || localStorage.getItem('intelhub-avatar-renderer');
+      const forced = Config.forceRenderer || localStorage.getItem('phishhub-avatar-renderer');
       let chosen = null;
       if (forced && Renderers[forced]?.isAvailable()) {
         chosen = forced;
@@ -3832,7 +3885,7 @@ const Avatar = (() => {
       if (!Renderers[name]) return false;
       if (Config.activeRenderer) Renderers[Config.activeRenderer].unmount();
       Config.forceRenderer = name;
-      localStorage.setItem('intelhub-avatar-renderer', name);
+      localStorage.setItem('phishhub-avatar-renderer', name);
       this.init();
       return true;
     }
@@ -3844,27 +3897,27 @@ const Avatar = (() => {
 /* ----- AVATAR_LINES (i18n messages, retained from previous versions) ----- */
 const AVATAR_LINES = {
   en: {
-    hello: "Hi! I'm Sakura, your OSINT analyst. Run a query and I'll dig in for you!",
-    idle: "Ready when you are. Run a query to begin.",
-    searching: "Cross-referencing leak databases. Hold tight…",
-    searchingLong: "Still scanning… free tiers can be slow on first hit.",
+    hello: "Hi! I'm Sakura, your phishing analyst. Drop me an indicator and I'll run the recon!",
+    idle: "Ready. Submit an email, domain, URL, IP or hash to investigate.",
+    searching: "Querying sender reputation, DNS posture and threat feeds…",
+    searchingLong: "Still working… URLScan submissions can take ~30s to detonate.",
     success: (n, svc) => n > 0
-      ? `Done! Found ${n} hit${n>1?'s':''} across ${svc} source${svc>1?'s':''}. Check the Results tab! ✨`
-      : `Scan complete — no leaks found across ${svc} source${svc>1?'s':''}. All clean!`,
-    error: "Mou… something broke upstream. Check Configuration → Connectors status.",
-    partialError: "Some connectors failed but I got partial results. Check Results.",
-    angry: "Hmph! Some provider blocked us. Check the Worker logs."
+      ? `Done! Got ${n} signal${n>1?'s':''} across ${svc} source${svc>1?'s':''}. Check the Verdict in Results.`
+      : `Recon complete — nothing flagged across ${svc} source${svc>1?'s':''}. Likely benign.`,
+    error: "Mou… upstream failed. Check Configuration → Connectors status.",
+    partialError: "Some connectors failed but I got partial signals. Check Results.",
+    angry: "Hmph! A provider blocked us. Check Worker logs."
   },
   it: {
-    hello: "Ciao! Sono Sakura, la tua analista OSINT. Lancia una query e mi metto subito al lavoro!",
-    idle: "Pronta quando vuoi. Lancia una query per iniziare.",
-    searching: "Sto incrociando i database di leak. Un attimo…",
-    searchingLong: "Ancora in scansione… i free tier sono lenti la prima volta.",
+    hello: "Ciao! Sono Sakura, la tua phishing analyst. Dammi un indicatore e parto con la recon!",
+    idle: "Pronta. Inserisci email, dominio, URL, IP o hash da investigare.",
+    searching: "Interrogo reputation sender, posture DNS e threat feed…",
+    searchingLong: "Ancora al lavoro… le submission URLScan richiedono ~30s per la detonation.",
     success: (n, svc) => n > 0
-      ? `Fatto! ${n} hit trovat${n>1?'i':'o'} su ${svc} font${svc>1?'i':'e'}. Controlla la tab Risultati! ✨`
-      : `Scansione completa — nessun leak su ${svc} font${svc>1?'i':'e'}. Tutto pulito!`,
-    error: "Mou… qualcosa si è rotto upstream. Controlla Configurazione → Stato connettori.",
-    partialError: "Alcuni connettori hanno fallito ma ho risultati parziali. Vedi Risultati.",
+      ? `Fatto! ${n} segnal${n>1?'i':'e'} da ${svc} font${svc>1?'i':'e'}. Controlla il Verdetto nei Risultati.`
+      : `Recon completa — nessun flag su ${svc} font${svc>1?'i':'e'}. Probabilmente benigno.`,
+    error: "Mou… upstream caduto. Controlla Configurazione → Stato connettori.",
+    partialError: "Alcuni connettori hanno fallito ma ho segnali parziali. Vedi Risultati.",
     angry: "Hmph! Un provider ci sta bloccando. Controlla i log del Worker."
   }
 };
@@ -4007,11 +4060,11 @@ function updateServiceChecks() { renderServiceChecks(); }
 
 function isServiceConfigured(id) {
   switch (id) {
-    case 'intelx': return !!state.apiKeys.intelx;
-    case 'hibp': return true;
-    case 'breachdirectory': return !!state.apiKeys.rapidapi;
-    case 'leakix': return !!state.apiKeys.leakix;
-    case 'dehashed': return !!(state.apiKeys.dehashedEmail && state.apiKeys.dehashed);
+    case 'hunter': return !!state.apiKeys.hunter;
+    case 'emailrep': return true;  // funziona senza key (50/giorno IP-based)
+    case 'doh': return true;       // no auth, illimitato
+    case 'urlscan': return !!state.apiKeys.urlscan;
+    case 'virustotal': return !!state.apiKeys.virustotal;
     default: return false;
   }
 }
@@ -4508,11 +4561,10 @@ function renderLimits() {
 function renderConfigForm() {
   const apiForm = $('#apiKeysForm');
   const fields = [
-    { id: 'intelx', label: 'IntelX API Key', mask: true, svc: 'intelx' },
-    { id: 'rapidapi', label: 'RapidAPI Key (BreachDirectory)', mask: true, svc: 'breachdirectory' },
-    { id: 'leakix', label: 'LeakIX API Key', mask: true, svc: 'leakix' },
-    { id: 'dehashedEmail', label: 'DeHashed Email (richiede subscription a pagamento)', mask: false, svc: 'dehashed' },
-    { id: 'dehashed', label: 'DeHashed API Key (richiede subscription a pagamento)', mask: true, svc: 'dehashed' }
+    { id: 'hunter', label: 'Hunter.io API Key', mask: true, svc: 'hunter' },
+    { id: 'emailrep', label: 'EmailRep API Key (opzionale — funziona anche senza)', mask: true, svc: 'emailrep' },
+    { id: 'urlscan', label: 'URLScan.io API Key', mask: true, svc: 'urlscan' },
+    { id: 'virustotal', label: 'VirusTotal API Key (Free Public)', mask: true, svc: 'virustotal' }
   ];
   apiForm.innerHTML = fields.map(f => fieldHtml(f)).join('');
 
@@ -4651,7 +4703,7 @@ function renderConfigForm() {
     if (!state.authSession?.key) { toast('Login required', 'error'); return; }
     const payload = {
       apiKeys: { ...state.apiKeys, master: '' },
-      intelxTier: state.intelxTier,
+      
       corsProxy: state.corsProxy,
       aiConsent: state.aiConsent
       // NB: history e recent NON inclusi (sono per-user)
@@ -4677,15 +4729,15 @@ function renderConfigForm() {
   if (avActive) avActive.textContent = Avatar.Config.activeRenderer || 'svg';
   const avInfoEl = $('#avRendererInfo');
   $$('input[name=avRenderer]').forEach(r => {
-    const stored = localStorage.getItem('intelhub-avatar-renderer') || 'auto';
+    const stored = localStorage.getItem('phishhub-avatar-renderer') || 'auto';
     r.checked = (r.value === stored);
     r.onchange = () => {
       if (!r.checked) return;
       if (r.value === 'auto') {
-        localStorage.removeItem('intelhub-avatar-renderer');
+        localStorage.removeItem('phishhub-avatar-renderer');
         Avatar.Config.forceRenderer = null;
       } else {
-        localStorage.setItem('intelhub-avatar-renderer', r.value);
+        localStorage.setItem('phishhub-avatar-renderer', r.value);
         Avatar.Config.forceRenderer = r.value;
       }
       Avatar.Controller.init();
@@ -4717,7 +4769,7 @@ function renderConfigForm() {
     const a = document.createElement('a');
     const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     a.href = url;
-    a.download = `intelhub-backup-${ts}.json`;
+    a.download = `phishhub-backup-${ts}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -4768,7 +4820,7 @@ function fieldHtml(f) {
 }
 
 function updateConfigStatuses() {
-  ['intelx','rapidapi','leakix','dehashedEmail','dehashed','anthropic'].forEach(id => {
+  ['hunter','emailrep','urlscan','virustotal','anthropic'].forEach(id => {
     const el = $(`.status-${id}`);
     if (!el) return;
     const ok = !!(state.apiKeys[id] || '').trim();
@@ -4913,8 +4965,10 @@ async function triggerSearch() {
   }, 8000);
   // Imposta lo stato 'searching' che renderAllResults usa per mostrare il loading panel
   state.searching = { kw, type, services, startedAt: Date.now() };
+  // Naviga ai results: hashchange fa scattare renderAllResults che vede state.searching
   if (location.hash === '#results') renderAllResults();
   else location.hash = '#results';
+  // Tick contatore elapsed ogni 500ms
   const elapsedTimer = setInterval(() => {
     const el = document.querySelector('.searching-elapsed');
     if (!el) { clearInterval(elapsedTimer); return; }
@@ -4967,16 +5021,14 @@ async function init() {
   const ssoMaster = sessionStorage.getItem(SSO_KEY);
   const ssoTs = parseInt(sessionStorage.getItem(SSO_TS) || '0');
   if (!ssoMaster || (Date.now() - ssoTs) > SSO_TTL_MS) {
-    // No valid session: redirect al portal con returnTo
     sessionStorage.removeItem(SSO_KEY);
     sessionStorage.removeItem(SSO_TS);
     window.location.replace('/?returnTo=' + encodeURIComponent(window.location.pathname + window.location.hash));
     return;
   }
-  // Valid session: nascondi modal, auto-login
   $('#loginModal').style.display = 'none';
   $('#masterKey').value = ssoMaster;
-  setTimeout(() => login(), 50);  // async, dopo che il DOM è ready
+  setTimeout(() => login(), 50);
 
   // Language switcher
   $$('.lang-btn').forEach(b => {
@@ -4990,8 +5042,8 @@ async function init() {
   // Forgot Master Key — apre mailto
   $('#forgotKeyLink').onclick = e => {
     e.preventDefault();
-    const subject = encodeURIComponent('Intel-Hub — Master Key recovery');
-    const body = encodeURIComponent('Ciao Samuel,\n\nho dimenticato la Master Key di accesso a Intel-Hub.\n\nGrazie,\n');
+    const subject = encodeURIComponent('Phish-Hub — Master Key recovery');
+    const body = encodeURIComponent('Ciao Samuel,\n\nho dimenticato la Master Key di accesso a Phish-Hub.\n\nGrazie,\n');
     window.location.href = `mailto:${RECOVERY_EMAIL}?subject=${subject}&body=${body}`;
   };
 
