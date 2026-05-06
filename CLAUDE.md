@@ -6,7 +6,7 @@ Multi-hub OSINT web platform for SOC analysts. Single-file HTML SPAs deployed on
 
 **Live URL:** `https://soc-hub-suite.pages.dev`
 **CORS Proxy:** `https://intel-hub-proxy.onrender.com` (Render Express, Node 18)
-**Repo:** `github.com/PsychoKarasu/identity-intelligence---osint-webapp`
+**Repo:** `github.com/PsychoKarasu/SOC-Hub-Suite---OSINT-WebApp`
 **Branch:** `claude/identity-intelligence-hub-zfs6I`
 
 ---
