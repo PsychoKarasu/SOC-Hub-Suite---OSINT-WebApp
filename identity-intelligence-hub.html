@@ -4459,11 +4459,23 @@ async function fetchProviderQuotas() {
       try {
         const base = state.intelxTier === 'paid' ? 'https://2.intelx.io' : 'https://free.intelx.io';
         const r = await fetchTimeout(proxied(`${base}/authenticate/info`), { headers: { 'x-key': state.apiKeys.intelx } }, 12000);
-        if (!r.ok) return;
+             if (!r.ok) return;
         const j = await r.json();
-        const search = j.paths?.['/intelligent/search'];
-        if (search && typeof search.Credit === 'number' && typeof search.CreditMax === 'number') {
-          state.quotas.intelx = { used: search.CreditMax - search.Credit, limit: search.CreditMax, resetAt: null, source: 'api' };
+        // IntelX response shape: 'Paths' uppercase OR 'paths' lowercase OR 'Limits' array fallback
+        let used = null, limit = null;
+        const pathInfo = j.Paths?.['/intelligent/search'] || j.paths?.['/intelligent/search'];
+        if (pathInfo && typeof pathInfo.Credit === 'number' && typeof pathInfo.CreditMax === 'number') {
+          used = pathInfo.CreditMax - pathInfo.Credit;
+          limit = pathInfo.CreditMax;
+        } else if (Array.isArray(j.Limits)) {
+          const l = j.Limits.find(x => x.Path === '/intelligent/search' || x.Path === 'search');
+          if (l && typeof l.Credit === 'number' && typeof l.CreditMax === 'number') {
+            used = l.CreditMax - l.Credit;
+            limit = l.CreditMax;
+          }
+        }
+        if (used !== null && limit !== null) {
+          state.quotas.intelx = { used, limit, resetAt: null, source: 'api' };
         }
       } catch (e) {}
     })());
