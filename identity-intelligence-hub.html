@@ -856,7 +856,23 @@ input, select, textarea { font-family: inherit; }
   letter-spacing: 0.08em;
   font-weight: 600;
 }
-
+.quota-source-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 6px;
+  background: color-mix(in srgb, var(--success) 18%, transparent);
+  color: var(--success);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+.quota-source-tag.quota-source-internal {
+  background: color-mix(in srgb, var(--text-3) 18%, transparent);
+  color: var(--text-3);
+}
 .results-list { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; content-visibility: auto; }
 .result-row {
   display: grid; grid-template-columns: 1fr auto;
@@ -2143,7 +2159,11 @@ input, select, textarea { font-family: inherit; }
         <div class="section-header">
           <div class="section-eyebrow" data-i18n="limits.eyebrow">Quota Monitor</div>
           <h1><span data-i18n="limits.title.before">Rate Limits </span><span style="background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent;" data-i18n="limits.title.gradient">& Quote</span></h1>
-          <p data-i18n="limits.subtitle">Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori si resettano al reload.</p>
+                    <p data-i18n="limits.subtitle">Monitor in tempo reale dell'utilizzo di ogni connettore. I contatori si resettano al reload.</p>
+          <div class="row-flex no-print" style="margin-top: 14px; gap: 10px; align-items: center;">
+            <button class="btn btn-primary btn-sm" id="refreshQuotasBtn"><i data-lucide="refresh-cw"></i> <span data-i18n="limits.refresh">Refresh quotas from providers</span></button>
+            <span id="quotasStatus" class="muted mono" style="font-size: 0.78rem;"></span>
+          </div>
         </div>
         <div class="kpi-grid" id="kpiGrid"></div>
         <div class="card" style="padding: 0; overflow:hidden;">
@@ -2498,7 +2518,10 @@ const state = {
     leakix: 0,
     dehashed: 0
   },
-  rateResetKeys: {} // {intelx: 'YYYY-MM-DD', breachdirectory: 'YYYY-MM'} per detect period rollover
+    rateResetKeys: {}, // {intelx: 'YYYY-MM-DD', breachdirectory: 'YYYY-MM'} per detect period rollover
+  quotas: {},
+  quotasFetchedAt: 0,
+  quotasFetching: false
 };
 
 function periodKey(period) {
@@ -2737,6 +2760,9 @@ const I18N = {
     'limits.ok': 'OK',
     'limits.nearLimit': 'Near limit',
     'limits.exhausted': 'Exhausted',
+    'limits.refresh': 'Refresh quotas from providers',
+    'limits.refreshing': 'Refreshing…',
+    'limits.lastFetch': 'Last refresh',
     'limits.over': 'su',
     'svc.plan.free': 'Free',
     'svc.plan.noauth': 'No-Auth',
@@ -2983,6 +3009,9 @@ const I18N = {
     'limits.ok': 'OK',
     'limits.nearLimit': 'Vicino al limite',
     'limits.exhausted': 'Esaurito',
+    'limits.refresh': 'Aggiorna quote dai provider',
+    'limits.refreshing': 'Aggiornamento…',
+    'limits.lastFetch': 'Ultimo refresh',
     'limits.over': 'su',
     'svc.plan.free': 'Free',
     'svc.plan.noauth': 'No-Auth',
@@ -4418,6 +4447,54 @@ function renderServiceData(r) {
 
 // loadAIAnalysis: legacy single-entry (sostituita da loadAIForEntry per le history)
 
+/* ============ Provider quotas (real-time fetch dai provider) ============ */
+const QUOTA_CACHE_MS = 60 * 1000;
+
+async function fetchProviderQuotas() {
+  if (state.quotasFetching) return;
+  state.quotasFetching = true;
+  const tasks = [];
+  if (state.apiKeys.intelx) {
+    tasks.push((async () => {
+      try {
+        const base = state.intelxTier === 'paid' ? 'https://2.intelx.io' : 'https://free.intelx.io';
+        const r = await fetchTimeout(proxied(`${base}/authenticate/info`), { headers: { 'x-key': state.apiKeys.intelx } }, 12000);
+        if (!r.ok) return;
+        const j = await r.json();
+        const search = j.paths?.['/intelligent/search'];
+        if (search && typeof search.Credit === 'number' && typeof search.CreditMax === 'number') {
+          state.quotas.intelx = { used: search.CreditMax - search.Credit, limit: search.CreditMax, resetAt: null, source: 'api' };
+        }
+      } catch (e) {}
+    })());
+  }
+  state.quotas.hibp = { used: state.rateUsage.hibp || 0, limit: Infinity, source: 'unlimited' };
+  await Promise.allSettled(tasks);
+  state.quotasFetchedAt = Date.now();
+  state.quotasFetching = false;
+}
+
+async function refreshQuotasUI() {
+  const btn = document.getElementById('refreshQuotasBtn');
+  const status = document.getElementById('quotasStatus');
+  if (btn) { btn.disabled = true; btn.querySelector('span').textContent = t('limits.refreshing'); }
+  if (status) status.innerHTML = `<span class="spinner" style="display:inline-block;width:11px;height:11px;vertical-align:middle;"></span> ${t('limits.refreshing')}`;
+  await fetchProviderQuotas();
+  renderLimits();
+  if (btn) { btn.disabled = false; btn.querySelector('span').textContent = t('limits.refresh'); }
+  updateQuotasStatusUI();
+}
+
+function updateQuotasStatusUI() {
+  const status = document.getElementById('quotasStatus');
+  if (!status) return;
+  if (state.quotasFetchedAt === 0) { status.textContent = ''; return; }
+  const ago = Math.floor((Date.now() - state.quotasFetchedAt) / 1000);
+  const agoTxt = ago < 60 ? `${ago}s` : ago < 3600 ? `${Math.floor(ago/60)}m` : `${Math.floor(ago/3600)}h`;
+  const apiCount = Object.values(state.quotas).filter(q => q && q.source === 'api').length;
+  status.innerHTML = `<span style="color:var(--success);">●</span> ${t('limits.lastFetch')}: ${agoTxt} ${currentLang==='it'?'fa':'ago'} · ${apiCount} ${currentLang==='it'?'provider live':'live providers'}`;
+}
+
 /* ============ Limits Section ============ */
 function renderLimits() {
   const grid = $('#kpiGrid');
@@ -4439,10 +4516,13 @@ function renderLimits() {
   </tr>`;
   tbody.innerHTML = '';
   Object.entries(SERVICES).forEach(([id, svc]) => {
-    const used = state.rateUsage[id] || 0;
-    const limit = svc.limit;
+    const realQuota = state.quotas[id];
+    const fromApi = realQuota && realQuota.source === 'api';
+    const used = fromApi ? realQuota.used : (state.rateUsage[id] || 0);
+    const limit = fromApi ? realQuota.limit : svc.limit;
     const remaining = limit === Infinity ? '∞' : Math.max(0, limit - used);
     const pct = limit === Infinity ? 0 : (used / limit) * 100;
+    const sourceTag = fromApi ? '<span class="quota-source-tag" title="Real-time from provider API">API</span>' : '<span class="quota-source-tag quota-source-internal" title="Internal session counter">SESSION</span>';
     let stato = '🟢 ' + t('limits.ok');
     if (limit === Infinity) stato = '🟢 ' + t('limits.unlimited');
     else if (pct >= 100) stato = '🔴 ' + t('limits.exhausted');
@@ -4472,15 +4552,17 @@ function renderLimits() {
       <td><strong>${svc.name}</strong></td>
       <td>${planLabel}</td>
       <td>${limitTxt}${unitLabel}</td>
-      <td><strong style="color:${pct >= 80 && limit !== Infinity ? 'var(--warning)' : 'var(--text-1)'};">${used}</strong></td>
+      <td><strong style="color:${pct >= 80 && limit !== Infinity ? 'var(--warning)' : 'var(--text-1)'};">${used}</strong> ${sourceTag}</td>
       <td>${remaining}</td>
       <td><span class="muted mono" style="font-size:0.74rem;">${resetLabel}</span>${lastResetTxt}</td>
       <td>${stato}</td>
       <td><a href="${svc.pricing}" target="_blank" rel="noopener">Pricing →</a></td>
-      <td>${canReset ? `<button class="btn btn-ghost btn-sm" data-reset-svc="${id}" title="${t('limits.resetBtn')}"><i data-lucide="rotate-ccw"></i></button>` : ''}</td>
+      <td>${canReset && !fromApi ? `<button class="btn btn-ghost btn-sm" data-reset-svc="${id}" title="${t('limits.resetBtn')}"><i data-lucide="rotate-ccw"></i></button>` : ''}</td>
     `;
     tbody.appendChild(tr);
   });
+    const refreshBtn = $('#refreshQuotasBtn');
+  if (refreshBtn) refreshBtn.onclick = () => refreshQuotasUI();
   // Wire reset buttons
   $$('button[data-reset-svc]').forEach(b => b.onclick = () => {
     const svc = b.dataset.resetSvc;
@@ -4785,7 +4867,11 @@ function setRoute(name) {
   if (sec) sec.classList.add('active');
   $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.route === name));
   $('#routeTitle').textContent = t('topbar.' + name) || name;
-  if (name === 'limits') renderLimits();
+    if (name === 'limits') {
+    renderLimits();
+    if (Date.now() - state.quotasFetchedAt > QUOTA_CACHE_MS) refreshQuotasUI();
+    else updateQuotasStatusUI();
+  }
   if (name === 'config') renderConfigForm();
   if (name === 'search') {
     renderServiceChecks();
