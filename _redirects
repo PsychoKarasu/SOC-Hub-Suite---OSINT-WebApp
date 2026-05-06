@@ -1,5 +1,0 @@
-# Pretty URLs for hub navigation
-/identity-intelligence-hub  /identity-intelligence-hub.html  200
-/intel-hub                  /identity-intelligence-hub.html  200
-/phish-hub                  /phish-hub.html                  200
-# Note: '/' is served as index.html (portal landing) by Cloudflare Pages default
