@@ -869,6 +869,22 @@ input, select, textarea { font-family: inherit; }
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 600;
+  .quota-source-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 6px;
+  background: color-mix(in srgb, var(--success) 18%, transparent);
+  color: var(--success);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+.quota-source-tag.quota-source-internal {
+  background: color-mix(in srgb, var(--text-3) 18%, transparent);
+  color: var(--text-3);
 }
 
 .results-list { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; content-visibility: auto; }
@@ -2743,6 +2759,9 @@ const I18N = {
     'limits.ok': 'OK',
     'limits.nearLimit': 'Near limit',
     'limits.exhausted': 'Exhausted',
+    'limits.refresh': 'Refresh quotas from providers',
+    'limits.refreshing': 'Refreshing…',
+    'limits.lastFetch': 'Last refresh',
     'limits.over': 'su',
     'svc.plan.free': 'Free',
     'svc.plan.noauth': 'No-Auth',
@@ -2989,6 +3008,9 @@ const I18N = {
     'limits.ok': 'OK',
     'limits.nearLimit': 'Vicino al limite',
     'limits.exhausted': 'Esaurito',
+    'limits.refresh': 'Aggiorna quote dai provider',
+    'limits.refreshing': 'Aggiornamento…',
+    'limits.lastFetch': 'Ultimo refresh',
     'limits.over': 'su',
     'svc.plan.free': 'Free',
     'svc.plan.noauth': 'No-Auth',
@@ -4615,7 +4637,8 @@ function renderLimits() {
     `;
     tbody.appendChild(tr);
   });
-  // Wire reset buttons
+    const refreshBtn = $('#refreshQuotasBtn');
+  if (refreshBtn) refreshBtn.onclick = () => refreshQuotasUI();
   $$('button[data-reset-svc]').forEach(b => b.onclick = () => {
     const svc = b.dataset.resetSvc;
     if (!confirm(t('limits.resetConfirm').replace('{svc}', SERVICES[svc].name))) return;
@@ -4918,7 +4941,11 @@ function setRoute(name) {
   if (sec) sec.classList.add('active');
   $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.route === name));
   $('#routeTitle').textContent = t('topbar.' + name) || name;
-  if (name === 'limits') renderLimits();
+    if (name === 'limits') {
+    renderLimits();
+    if (Date.now() - state.quotasFetchedAt > QUOTA_CACHE_MS) refreshQuotasUI();
+    else updateQuotasStatusUI();
+  }
   if (name === 'config') renderConfigForm();
   if (name === 'search') {
     renderServiceChecks();
