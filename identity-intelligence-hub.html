@@ -2595,6 +2595,16 @@ const I18N = {
     'config.osintKeys': 'OSINT services keys',
     'config.intelxTier': 'IntelX Tier',
     'config.aiSection': 'AI Analysis (Claude)',
+    'config.status.ok': 'Configured ✅',
+    'validate.empty': 'Enter a keyword.',
+    'validate.email': 'Invalid email.',
+    'validate.ip': 'Invalid IP address.',
+    'validate.domain': 'Invalid domain (missing TLD).',
+    'validate.phone': 'Phone not in E.164 format.',
+    'validate.url': 'URL must start with http:// or https://',
+    'validate.name.tooShort': 'Enter first and last name (min 2 words).',
+    'validate.name.onlyAlpha': 'Only alphabetic characters allowed.',
+    'config.status.missing': 'Not configured ⚠️',
     'config.aiConsent': 'I consent to sending raw aggregated data to Claude (Anthropic) for analysis.',
     'config.soarTitle': 'External integration (Cortex SOAR)',
     'config.soarDesc': 'Use the URL below to call the app from Cortex SOAR or other SIEM/SOAR tools. The Master API Key is validated client-side via SHA-256.',
@@ -2826,6 +2836,16 @@ const I18N = {
     'config.osintKeys': 'Chiavi servizi OSINT',
     'config.intelxTier': 'IntelX Tier',
     'config.aiSection': 'AI Analysis (Claude)',
+    'config.status.ok': 'Configurata ✅',
+    'validate.empty': 'Inserisci una keyword.',
+    'validate.email': 'Email non valida.',
+    'validate.ip': 'Indirizzo IP non valido.',
+    'validate.domain': 'Dominio non valido (manca TLD).',
+    'validate.phone': 'Telefono non in formato E.164.',
+    'validate.url': 'URL deve iniziare con http:// o https://',
+    'validate.name.tooShort': 'Inserisci nome e cognome (min 2 parole).',
+    'validate.name.onlyAlpha': 'Solo caratteri alfabetici.',
+    'config.status.missing': 'Non configurata ⚠️',
     'config.aiConsent': "Acconsento all'invio dei dati grezzi aggregati a Claude (Anthropic) per l'analisi.",
     'config.soarTitle': 'Integrazione esterna (Cortex SOAR)',
     'config.soarDesc': "Usa la URL seguente per richiamare l'app da Cortex SOAR o altri strumenti SIEM/SOAR. La Master API Key viene validata client-side via SHA-256.",
@@ -3005,7 +3025,7 @@ function setLang(lang) {
     $('#routeTitle').textContent = t('topbar.' + route);
     // Re-render section attiva
     if (route === 'limits') renderLimits();
-    if (route === 'config') updatePersistStatus();
+    if (route === 'config') { updatePersistStatus(); updateConfigStatuses(); }
     if (route === 'results') renderAllResults();
     // Avatar idle msg
     const stage = document.getElementById('avatarStage');
@@ -3200,29 +3220,29 @@ function fetchTimeout(url, options = {}, ms = 30000) {
 }
 
 function validate(kw, type) {
-  if (!kw || !kw.trim()) return 'Inserisci una keyword.';
+  if (!kw || !kw.trim()) return t('validate.empty');
   switch (type) {
     case 'email':
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(kw)) return 'Email non valida.';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(kw)) return t('validate.email');
       break;
     case 'ip':
       const v4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(kw);
       const v6 = /^[0-9a-fA-F:]+$/.test(kw) && kw.includes(':');
-      if (!v4 && !v6) return 'Indirizzo IP non valido.';
+      if (!v4 && !v6) return t('validate.ip');
       break;
     case 'domain':
-      if (!/^([a-z0-9-]+\.)+[a-z]{2,}$/i.test(kw)) return 'Dominio non valido (manca TLD).';
+      if (!/^([a-z0-9-]+\.)+[a-z]{2,}$/i.test(kw)) return t('validate.domain');
       break;
     case 'phone':
-      if (!/^\+?[1-9]\d{6,14}$/.test(kw.replace(/\s/g,''))) return 'Telefono non in formato E.164.';
+      if (!/^\+?[1-9]\d{6,14}$/.test(kw.replace(/\s/g,''))) return t('validate.phone');
       break;
     case 'url':
-      if (!/^https?:\/\/.+/i.test(kw)) return 'URL deve iniziare con http:// o https://';
+      if (!/^https?:\/\/.+/i.test(kw)) return t('validate.url');
       break;
     case 'name':
       const parts = kw.trim().split(/\s+/);
-      if (parts.length < 2) return 'Inserisci nome e cognome (min 2 parole).';
-      if (!parts.every(p => /^[\p{L}'-]+$/u.test(p))) return 'Solo caratteri alfabetici.';
+      if (parts.length < 2) return t('validate.name.tooShort');
+      if (!parts.every(p => /^[\p{L}'-]+$/u.test(p))) return t('validate.name.onlyAlpha');
       break;
   }
   return null;
@@ -4633,7 +4653,9 @@ function updateConfigStatuses() {
     const el = $(`.status-${id}`);
     if (!el) return;
     const ok = !!(state.apiKeys[id] || '').trim();
-    el.innerHTML = ok ? '<span style="color:var(--success);">Configurata ✅</span>' : '<span style="color:var(--warning);">Non configurata ⚠️</span>';
+    el.innerHTML = ok
+      ? `<span style="color:var(--success);">${t('config.status.ok')}</span>`
+      : `<span style="color:var(--warning);">${t('config.status.missing')}</span>`;
   });
 }
 

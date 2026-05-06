@@ -1948,7 +1948,7 @@ input, select, textarea { font-family: inherit; }
                 <div class="stat-item">
                   <div class="stat-label" data-i18n="stat.active">Connettori Attivi</div>
                   <div class="stat-value" id="statActive">0</div>
-                  <div class="stat-trend up" id="statActiveDelta" data-i18n="stat.active.sub">/ 4 disponibili</div>
+                  <div class="stat-trend up" id="statActiveDelta" data-i18n="stat.active.sub">/ 5 disponibili</div>
                 </div>
                 <div class="stat-item">
                   <div class="stat-label" data-i18n="stat.hits">Hit Totali</div>
@@ -2524,7 +2524,16 @@ const I18N = {
     'stat.queries': 'Session Queries',
     'stat.queries.sub': 'in-memory',
     'stat.active': 'Active Connectors',
-    'stat.active.sub': '/ 4 available',
+    'stat.active.sub': '/ 5 available',
+    'config.status.ok': 'Configured ✅',
+    'validate.empty': 'Enter a keyword.',
+    'validate.email': 'Invalid email.',
+    'validate.ip': 'Invalid IP address.',
+    'validate.domain': 'Invalid domain (missing TLD).',
+    'validate.url': 'URL must start with http:// or https://',
+    'validate.hash': 'Invalid hash (expected MD5/SHA1/SHA256).',
+    'validate.headers': 'Paste full email headers (Received, From, etc.).',
+    'config.status.missing': 'Not configured ⚠️',
     'stat.hits': 'Total Hits',
     'stat.hits.sub': 'leak + breach',
     'stat.latency': 'Avg Latency',
@@ -2756,7 +2765,16 @@ const I18N = {
     'stat.queries': 'Query Sessione',
     'stat.queries.sub': 'in-memory',
     'stat.active': 'Connettori Attivi',
-    'stat.active.sub': '/ 4 disponibili',
+    'stat.active.sub': '/ 5 disponibili',
+    'config.status.ok': 'Configurata ✅',
+    'validate.empty': 'Inserisci una keyword.',
+    'validate.email': 'Email non valida.',
+    'validate.ip': 'Indirizzo IP non valido.',
+    'validate.domain': 'Dominio non valido (manca TLD).',
+    'validate.url': 'URL deve iniziare con http:// o https://',
+    'validate.hash': 'Hash non valido (atteso MD5/SHA1/SHA256).',
+    'validate.headers': 'Incolla header email completi (Received, From, ecc.).',
+    'config.status.missing': 'Non configurata ⚠️',
     'stat.hits': 'Hit Totali',
     'stat.hits.sub': 'leak + breach',
     'stat.latency': 'Avg Latency',
@@ -2991,7 +3009,7 @@ function setLang(lang) {
     $('#routeTitle').textContent = t('topbar.' + route);
     // Re-render section attiva
     if (route === 'limits') renderLimits();
-    if (route === 'config') updatePersistStatus();
+    if (route === 'config') { updatePersistStatus(); updateConfigStatuses(); }
     if (route === 'results') renderAllResults();
     // Avatar idle msg
     const stage = document.getElementById('avatarStage');
@@ -3186,28 +3204,27 @@ function fetchTimeout(url, options = {}, ms = 30000) {
 }
 
 function validate(kw, type) {
-  if (!kw || !kw.trim()) return 'Inserisci una keyword.';
+  if (!kw || !kw.trim()) return t('validate.empty');
   switch (type) {
     case 'email':
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(kw)) return 'Email non valida.';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(kw)) return t('validate.email');
       break;
     case 'ip':
       const v4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(kw);
       const v6 = /^[0-9a-fA-F:]+$/.test(kw) && kw.includes(':');
-      if (!v4 && !v6) return 'Indirizzo IP non valido.';
+      if (!v4 && !v6) return t('validate.ip');
       break;
     case 'domain':
-      if (!/^([a-z0-9-]+\.)+[a-z]{2,}$/i.test(kw)) return 'Dominio non valido (manca TLD).';
+      if (!/^([a-z0-9-]+\.)+[a-z]{2,}$/i.test(kw)) return t('validate.domain');
       break;
     case 'url':
-      if (!/^https?:\/\/.+/i.test(kw)) return 'URL deve iniziare con http:// o https://';
+      if (!/^https?:\/\/.+/i.test(kw)) return t('validate.url');
       break;
     case 'hash':
-      if (!/^[a-f0-9]{32}$|^[a-f0-9]{40}$|^[a-f0-9]{64}$/i.test(kw)) return 'Hash non valido (atteso MD5/SHA1/SHA256).';
+      if (!/^[a-f0-9]{32}$|^[a-f0-9]{40}$|^[a-f0-9]{64}$/i.test(kw)) return t('validate.hash');
       break;
     case 'headers':
-      // Header analyzer: input multilinea, validato dal modulo locale
-      if (kw.length < 20) return 'Incolla header email completi (Received, From, ecc.).';
+      if (kw.length < 20) return t('validate.headers');
       break;
   }
   return null;
@@ -4670,11 +4687,13 @@ function fieldHtml(f) {
 }
 
 function updateConfigStatuses() {
-  ['intelx','rapidapi','leakix','dehashedEmail','dehashed','anthropic'].forEach(id => {
+  ['hunter','emailrep','urlscan','virustotal','anthropic'].forEach(id => {
     const el = $(`.status-${id}`);
     if (!el) return;
     const ok = !!(state.apiKeys[id] || '').trim();
-    el.innerHTML = ok ? '<span style="color:var(--success);">Configurata ✅</span>' : '<span style="color:var(--warning);">Non configurata ⚠️</span>';
+    el.innerHTML = ok
+      ? `<span style="color:var(--success);">${t('config.status.ok')}</span>`
+      : `<span style="color:var(--warning);">${t('config.status.missing')}</span>`;
   });
 }
 
