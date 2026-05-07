@@ -3217,8 +3217,8 @@ async function persistConfig() {
       aiAnalysis: e.aiAnalysis  // mantengo se già caricato per non rifare la chiamata
     }));
     const payload = {
-      apiKeys: { ...state.apiKeys, master: '' },
-      
+      apiKeys: { ...state.apiKeys, master: '', anthropic: '' },
+
       corsProxy: state.corsProxy,
       aiConsent: state.aiConsent,
       searchHistory: histSlim,
@@ -4704,24 +4704,8 @@ function renderConfigForm() {
       schedulePersist();
     });
   });
-  $$('.toggle-vis').forEach(b => b.onclick = e => {
-    const target = $(b.dataset.target);
-    target.type = target.type === 'password' ? 'text' : 'password';
-    b.innerHTML = target.type === 'password' ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
-    lucide.createIcons();
-  });
   $$('.test-conn').forEach(b => b.onclick = async () => {
     const svc = b.dataset.svc;
-    if (svc === 'anthropic') {
-      if (!state.apiKeys.anthropic) return toast('Inserisci la Anthropic API Key.', 'warning');
-      const prevConsent = state.aiConsent;
-      state.aiConsent = true;
-      toast('Test Anthropic in corso...', 'info');
-      const r = await callClaude('ping', 'email', [{ ping: true }]);
-      state.aiConsent = prevConsent;
-      toast(r.error ? 'Anthropic: ' + r.error.slice(0, 120) : 'Anthropic OK ✓', r.error ? 'error' : 'success');
-      return;
-    }
     if (!isServiceConfigured(svc)) return toast(`${SERVICES[svc].name}: chiave mancante.`, 'warning');
     toast(`Test ${SERVICES[svc].name} in corso...`, 'info');
     // Usa keyword realistiche per i test
@@ -4936,7 +4920,6 @@ function fieldHtml(f) {
       <label>${f.label} <span class="status-${f.id}" style="margin-left:8px;font-size:0.75rem;color:var(--text-3);"></span></label>
       <div class="input-group">
         <input id="${inputId}" data-field="${f.id}" class="input" type="${inputType}" value="${escapeHtml(val)}" autocomplete="off" />
-        ${f.mask ? `<button class="btn btn-ghost toggle-vis" data-target="#${inputId}"><i data-lucide="eye"></i></button>` : ''}
         <button class="btn btn-ghost test-conn" data-svc="${f.svc}"><i data-lucide="zap"></i> Test</button>
       </div>
     </div>
