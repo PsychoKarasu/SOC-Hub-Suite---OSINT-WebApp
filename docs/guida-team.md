@@ -68,7 +68,6 @@ Ogni Hub richiede un set distinto di credenziali verso servizi terzi. Vanno inse
 | **RapidAPI (BreachDirectory)** | https://rapidapi.com → BreachDirectory API → Subscribe | Free 50/mese |
 | **LeakIX** | https://leakix.net → account → API Key | Researcher tier (free) |
 | **DeHashed** | https://dehashed.com → My Account → API Credentials (email + key) | Subscription a pagamento |
-| **Anthropic Claude** *(opzionale)* | https://console.anthropic.com → API Keys | Pay-as-you-go |
 
 #### Phish-Hub
 | Servizio | Dove ottenerla | Tier consigliato |
@@ -77,9 +76,20 @@ Ogni Hub richiede un set distinto di credenziali verso servizi terzi. Vanno inse
 | **EmailRep** *(opzionale)* | https://emailrep.io | Anonimo OK (rate-limit per IP) |
 | **URLScan.io** | https://urlscan.io → User → API Key | Free |
 | **VirusTotal** | https://virustotal.com → User → API Key | Free 4 req/min |
-| **Anthropic Claude** *(opzionale)* | https://console.anthropic.com → API Keys | Pay-as-you-go |
 
 > Le chiavi dei servizi a pagamento condivisi tra il team (es. DeHashed, IntelX paid) sono nel medesimo vault della Master Key. **Recuperarle dal vault, non rigenerarle** salvo coordinamento col SOC Lead.
+
+#### 🔒 Anthropic / Claude (analisi AI) — chiave gestita centralmente
+
+La chiave Anthropic punta a una **subscription Claude personale del manutentore della suite**. Per questo motivo:
+
+- **Non è visibile** nell'interfaccia di Configuration di nessuno dei due Hub.
+- **Non è inseribile né modificabile** dagli analisti.
+- È iniettata in fase di build/deploy tramite il *Production Bundle* cifrato (vedi §2.3).
+- L'analisi AI continua a funzionare in modo **trasparente** per l'analista, condizionata al solo toggle **AI Consent**.
+- In caso di malfunzionamento dell'AI, **contattare il SOC Lead** (rotazione/refresh della chiave): gli analisti **non** devono procurarsene una propria.
+
+> ⚠️ Non condividere, esportare o tentare di estrarre la chiave Anthropic. È legata a un'utenza personale e il suo abuso comporta costi diretti per il manutentore.
 
 ### 2.3 Bundle di configurazione (deploy unificato)
 
@@ -201,7 +211,7 @@ I proxy pubblici (`corsproxy.io`, `api.allorigins.win`) sono accettati come **fa
      b. fetch() → SOC-Hub Proxy → API OSINT
      c. Risposta normalizzata in oggetto "finding"
 3. Aggregazione client-side dei finding (dedup per email/domain/IP/hash)
-4. (Opzionale, se Anthropic configurato + AI Consent ON):
+4. (Opzionale, se AI Consent ON — chiave Anthropic gestita centralmente):
      a. Build prompt con findings aggregati
      b. fetch() → Proxy → api.anthropic.com
      c. Render Markdown del report Claude
@@ -336,7 +346,7 @@ Layout speculare a Intel-Hub: sidebar con sezioni Portal, Operations, Search, Re
 | Servizio mostra ⚠️ *Not configured* | API key mancante o rigettata | Re-inserire la chiave in Configuration; verificarla sul portale del servizio |
 | Sessione scaduta dopo 8h | TTL `SESSION_TTL_MS` raggiunto | Re-login (le API key restano in localStorage) |
 | Rate limit hit | Quota giornaliera/mensile esaurita | Tab **Rate Limits** per stato; attendere reset o passare a tier paid |
-| AI analysis non parte | API key Anthropic mancante o consent OFF | Configuration → inserire chiave + togglare AI Consent |
+| AI analysis non parte | Consent AI disattivato, oppure problema sulla chiave centrale | Verificare il toggle **AI Consent** in Configuration. Se attivo e l'AI non risponde, **contattare il SOC Lead**: la chiave Anthropic è gestita centralmente e non è inseribile dagli analisti |
 | Risultati persi cambiando scheda | sessionStorage isolato per scheda | Lavorare in una sola scheda; export risultati prima di chiudere |
 | Browser dice "blocked by CSP" | URL fuori whitelist CSP | Verificare che il dominio del proxy sia incluso nella `Content-Security-Policy` (`identity-intelligence-hub.html` / `phish-hub.html`, meta tag in testa) |
 
