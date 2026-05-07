@@ -3599,7 +3599,7 @@ Generate the complete Phishing/Email Forensics report. Always include: risk verd
   const userMsg = USER_PROMPTS[currentLang] || USER_PROMPTS.en;
 
   try {
-    const res = await fetchTimeout('https://api.anthropic.com/v1/messages', {
+    const res = await fetchTimeout(proxied('https://api.anthropic.com/v1/messages'), {
       method: 'POST',
       headers: {
         'x-api-key': key,

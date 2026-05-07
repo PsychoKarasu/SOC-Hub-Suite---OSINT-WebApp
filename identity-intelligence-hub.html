@@ -3545,7 +3545,7 @@ Generate the complete Identity Intelligence report. Remember: for every cited re
   const userMsg = USER_PROMPTS[currentLang] || USER_PROMPTS.en;
 
   try {
-    const res = await fetchTimeout('https://api.anthropic.com/v1/messages', {
+    const res = await fetchTimeout(proxied('https://api.anthropic.com/v1/messages'), {
       method: 'POST',
       headers: {
         'x-api-key': key,
